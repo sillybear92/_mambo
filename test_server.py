@@ -22,14 +22,6 @@ if(len(sys.argv) != 2):
         print("e.g. {} eth0".format(sys.argv[0]))
 #        sys.exit(-1)
 
-
-def get_ip(interface_name):
-		"""Helper to get the IP adresse of the running server"""
-		import netifaces as ni
-		ip = ni.ifaddresses(interface_name)[2][0]['addr']
-		print(ip)
-		return ip  # should print "192.168.100.37"
-
 debug = True
 jpeg_quality = 95
 host='0.0.0.0'
@@ -58,9 +50,9 @@ class VideoGrabber(Thread):
                 self.running = True
                 self.buffer = None
                 self.lock = Lock()
-		self.winName='Capure Window'
-		self.winPosx=150
-		self.winPosy=118
+                self.winName='Capure Window'
+                self.winPosx=150
+                self.winPosy=118
 
         def stop(self):
                 self.running = False
@@ -80,15 +72,15 @@ class VideoGrabber(Thread):
                 while self.running:
                         img = np.array(sct.grab(mon))
                         cv2.imshow(self.winName,img)
-			cv2.waitKey(1)
+                        cv2.waitKey(1)
                         # JPEG compression
                         # Protected by a lock
                         # As the main thread may asks to access the buffer
                         self.lock.acquire()
                         result, self.buffer = cv2.imencode('.jpg', img, self.encode_param)
                         self.lock.release()
-		cv2.destroyAllWindows()
-		self.stop()
+                cv2.destroyAllWindows()
+                self.stop()
 
 
 grabber = VideoGrabber(jpeg_quality)
