@@ -3,6 +3,8 @@
 '''
 	shape_detect(): OpenCV shape detection 
 	-> https://www.pyimagesearch.com/2016/02/08/opencv-shape-detection/
+	create tracker : Multiple Object Tracking using OpenCV 
+	-> https://www.learnopencv.com/multitracker-multiple-object-tracking-using-opencv-c-python/
 '''
 from darkflow.net.build import TFNet
 import cv2
@@ -98,7 +100,7 @@ def distance_Box(old_track,new_track):
 	return n_track
 
 # Shape from Hand moving line
-def shape_detect(img,mask,rec_info,targetOn):
+def shape_detect(img,mask,rec_info,targetOn,tracker):
 	grayMask=cv2.cvtColor(mask,cv2.COLOR_RGB2GRAY)
 	blurred=cv2.GaussianBlur(grayMask,(5,5),0)
 	thresh=cv2.threshold(blurred,60,255,cv2.THRESH_BINARY)[1]
@@ -129,20 +131,20 @@ def shape_detect(img,mask,rec_info,targetOn):
 					if len(rec_info[x])>30:
 						if not targetOn:
 							target_hand.append(c[-1][0])
-							target,targetOn=get_target(img,target_hand)
+							targetOn=get_target(img,tracker,target_hand)
 						del rec_info[x][0]
 		else:
 			shape = "not_detect"
 		cv2.drawContours(mask,[c],-1,(0,255,0),2)
 		cv2.putText(mask,shape,(cX,cY),cv2.FONT_HERSHEY_SIMPLEX,0.5,(255,255,255),2)
-	return rec_info,target,targetOn
+	return rec_info,targetOn
 
 def preconnect_Net(mon):
 	img=cv2.cvtColor(np.array(sct.grab(mon)),cv2.COLOR_RGBA2RGB)
 	result=handTf.return_predict(img)
 	result=personTf.return_predict(img)
 
-def get_target(img,target_hand):
+def get_target(img,tracker,target_hand):
 	target=[]
 	targetFlag=0
 	result=personTf.return_predict(img)
@@ -150,22 +152,59 @@ def get_target(img,target_hand):
 	neartarget=abs(np.array([[[tx,ty,bx,by]] for [tx,ty,bx,by] in person]).reshape(-1,4)\
 	 - np.array([target_hand[-1][0],target_hand[-1][1],target_hand[-1][0],target_hand[-1][1]]).reshape(-1,4)).min(-1)
 	near=neartarget[-1]+2
-	print(near)
 	for [tx,ty,bx,by] in person:
 		if targetFlag:
 			continue
 		if (tx-near<target_hand[-1][0] and ty-near<target_hand[-1][1] 
 			and bx+near>target_hand[-1][0] and by+near>target_hand[-1][1]):
-			print('target!!')
-			target.append(tx,ty,bx,by)
+			target.append([tx,ty,bx,by])
 			targetFlag=1
-	#np.where(near_target)
-	cv2.putText(img,"Target",(target_hand[-1][0],target_hand[-1][1]),cv2.FONT_HERSHEY_SIMPLEX,0.7,(0,0,255),2)
-	return target,targetFlag
+	setTracker(img,tracker,target)
+	return targetFlag
 
-def set_target(img,target):
-	cv2.rectangle(img,(target[0],target[1]),(target[2],target[3]),(0, 255, 0),2)
-	cv2.putText(img, "Target",(bottom_x, top_y-5), cv2.FONT_HERSHEY_COMPLEX_SMALL,0.8,(0, 255, 0),1)
+def setTracker(img,tracker,target):
+	tx,ty,bx,by=target[-1][0],target[-1][1],target[-1][2],target[-1][3]
+	bbox=(tx,ty,bx-tx,by-ty)
+	ok=tracker.init(img,bbox)
+	cv2.rectangle(img,(tx,ty),(bx,by),(0,255,255),3)
+	cv2.putText(img,"Target",(bx, ty-5), cv2.FONT_HERSHEY_COMPLEX_SMALL,1,(0,255,255),2)
+
+'''
+Reference:https://www.learnopencv.com/multitracker-multiple-object-tracking-using-opencv-c-python/'''
+def createTrackerByName(trackerType):
+  # Create a tracker based on tracker name
+  if trackerType == trackerTypes[0]:
+    tracker = cv2.TrackerBoosting_create()
+  elif trackerType == trackerTypes[1]: 
+    tracker = cv2.TrackerMIL_create()
+  elif trackerType == trackerTypes[2]:
+    tracker = cv2.TrackerKCF_create()
+  elif trackerType == trackerTypes[3]:
+    tracker = cv2.TrackerTLD_create()
+  elif trackerType == trackerTypes[4]:
+    tracker = cv2.TrackerMedianFlow_create()
+  elif trackerType == trackerTypes[5]:
+    tracker = cv2.TrackerGOTURN_create()
+  elif trackerType == trackerTypes[6]:
+    tracker = cv2.TrackerMOSSE_create()
+  elif trackerType == trackerTypes[7]:
+    tracker = cv2.TrackerCSRT_create()
+  else:
+    tracker = None
+    print('Incorrect tracker name')
+    print('Available trackers are:')
+    for t in trackerTypes:
+      print(t)
+  return tracker
+
+def updateTracker(img):
+	ok,bbox=tracker.update(img)
+	if ok:
+		tx,ty,bx,by=int(bbox[0]),int(bbox[1]),int(bbox[0]+bbox[2]),int(bbox[1]+bbox[3])
+		cv2.rectangle(img,(tx,ty),(bx,by),(0,255,255),3)
+		cv2.putText(img,"Target",(bx, ty-5), cv2.FONT_HERSHEY_COMPLEX_SMALL,1,(0,255,255),2)
+	else:
+		cv2.putText(img, "Tracking failure detected", (100,80), cv2.FONT_HERSHEY_SIMPLEX, 0.75,(0,0,255),2)
 
 
 if __name__ == '__main__':
@@ -180,8 +219,9 @@ if __name__ == '__main__':
 	track=[]
 	hand=[]
 	rec_info=[]
-	target=[]
 	targetOn=0
+	trackerTypes = ['BOOSTING', 'MIL', 'KCF','TLD', 'MEDIANFLOW', 'GOTURN', 'MOSSE', 'CSRT']
+	tracker=createTrackerByName("KCF")
 	preconnect_Net(mon)
 	while(True):
 		img=cv2.cvtColor(np.array(sct.grab(mon)),cv2.COLOR_RGBA2RGB)
@@ -195,11 +235,13 @@ if __name__ == '__main__':
 			track=distance_Box(track,center_Box(hand))
 			cv2.polylines(mask,([np.int32(tr) for tr in track]),False,(255,255,0),3)
 			#detect_shape
-			rec_info,target,targetOn=shape_detect(img,mask,rec_info,targetOn)
+			rec_info,targetOn=shape_detect(img,mask,rec_info,targetOn,tracker)
+			img=cv2.add(img,mask)
 		else:
-			set_target(img,target)
-		nImg=cv2.add(img,mask)
-		cv2.imshow('video',nImg)
+			# Display FPS
+			prevTime=dp_fps(img,prevTime)
+			updateTracker(img)
+		cv2.imshow('video',img)
 		if ord('q')==cv2.waitKey(10):
 			exit(0)
 	print('== Turn over ==')
