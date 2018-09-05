@@ -13,7 +13,7 @@ from PIL import Image
 from mss import mss
 import imutils
 
-#Flow Option
+#TF Options
 hp="C:\\Users\\lee\\AnacondaProjects"
 '''options={"pbLoad":hp+"\\darkflow-master\\built_graph\\new-hand-voc.pb",
  "metaLoad":hp+ "\\darkflow-master\\built_graph\\new-hand-voc.meta",
@@ -45,8 +45,8 @@ def draw_rectangle(img,result):
 		n_detect.append([top_x,top_y,bottom_x,bottom_y])
 	return n_detect
 
+# Display FPS
 def dp_fps(img,prevTime):
-	# Display FPS
 	curTime=time.time()
 	sec=curTime - prevTime
 	prevTime=curTime
@@ -55,9 +55,9 @@ def dp_fps(img,prevTime):
 	return prevTime
 
 #Center of Box - point Draw
-def center_Box(hand):
+def center_Box(obj):
 	new_track=[]
-	for t_x,t_y,b_x,b_y in hand:
+	for t_x,t_y,b_x,b_y in obj:
 		c_x=(t_x+b_x)/2
 		c_y=(t_y+b_y)/2
 		new_track.append([[c_x,c_y]])
@@ -68,19 +68,27 @@ def distance_Box(old_track,new_track):
 	n_track=[]
 	len_old = len(old_track)
 	len_new = len(new_track)
+	# before Hand detection position list -> None
 	if len_old==0:
 		n_track=new_track
+	# now Hand detection position list -> None
 	elif len_new==0:
 		n_track=old_track
 	else:
 		old_point=np.float32([old_tr[-1] for old_tr in old_track]).reshape(-1,1,2)
 		new_point=np.float32([new_tr[-1] for new_tr in new_track]).reshape(1,-1,2)
+		''' befor Hand detection position - now Hand detection position < 60 :: bigger distance < 60
+			-> Same Hand '''
 		mask=abs(old_point-new_point).max(-1)<60
 		p_old,p_new=np.where(mask==True)
+		# Same Hand to list
 		for p_x,p_y in zip(p_old,p_new):
 			old_track[p_x].append(new_track[p_y][-1])
 			if len(old_track[p_x])>60:
 				del old_track[p_x][0]
+		''' ex) old_point.shape(3,1,2) * new_point.shape(2,1,2)
+			=> mask.shape(3,2)
+			mask.sum(axis=0)==0 => new Hand detection'''
 		z_index=np.concatenate(np.where(mask.sum(axis=0)==0))
 		for zz in z_index:
 			old_track.append(new_track[zz])
@@ -89,6 +97,7 @@ def distance_Box(old_track,new_track):
 		n_track=old_track
 	return n_track
 
+# Shape from Hand moving line
 def shape_detect(img,mask,rec_info,targetOn):
 	grayMask=cv2.cvtColor(mask,cv2.COLOR_RGB2GRAY)
 	blurred=cv2.GaussianBlur(grayMask,(5,5),0)
@@ -146,7 +155,7 @@ def get_target(img,target_hand):
 		if targetFlag:
 			continue
 		if (tx-near<target_hand[-1][0] and ty-near<target_hand[-1][1] 
-			and bx+near>target_hand[-1][0] and by+near<target_hand[-1][1]):
+			and bx+near>target_hand[-1][0] and by+near>target_hand[-1][1]):
 			print('target!!')
 			target.append(tx,ty,bx,by)
 			targetFlag=1
