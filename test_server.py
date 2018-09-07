@@ -23,7 +23,7 @@ if(len(sys.argv) != 2):
 #        sys.exit(-1)
 
 debug = True
-jpeg_quality = 95
+jpeg_quality = 50
 host='0.0.0.0'
 port = 5001
 sct=mss()
@@ -101,11 +101,12 @@ while(running):
         print(data==b'get')
         if(data == b'get'):
                 buffer = grabber.get_buffer()
+                print(len(buffer))
                 if buffer is None:
                         continue
                 if len(buffer) > 65507:
                         print("The message is too large to be sent within a single UDP datagram. We do not handle splitting the message in multiple datagrams")
-                        sock.sendto("FAIL",address)
+                        sock.sendto(b'FAIL',address)
                         continue
                 # We sent back the buffer to the client
                 sock.sendto(buffer.tobytes(), address)

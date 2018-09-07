@@ -2,7 +2,7 @@
 
 import socket
 import cv2
-import json
+import pickle
 import numpy as np
 from mss import mss
 from threading import Thread, Lock
@@ -12,7 +12,7 @@ import sys
 
 
 class VideoCapture(Thread):
-	def __init__(self,option):
+	def __init__(self,option=None):
 		Thread.__init__(self)
 		self.running = True
 		self.image = None
@@ -22,7 +22,8 @@ class VideoCapture(Thread):
 		self.result = None
 		self.option = option
 		self.tf=None
-		self.encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 95]
+		self.encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 70]
+		self.preconnect()
 
 	def stop(self):
 		self.running = False
@@ -31,28 +32,30 @@ class VideoCapture(Thread):
 		self.lock.acquire()
 		img=cv2.cvtColor(np.array(self.sct.grab(self.mon)),cv2.COLOR_RGBA2RGB)
 		check,self.image = cv2.imencode('.jpg', img, self.encode_param)
-		self.result = self.tf.return_predict(self.image)
+		self.result = self.tf.return_predict(img)
 		self.lock.release()
 		return self.image,self.result
 
 	def getImage(self):
 		self.lock.acquire()
-		self.image = cv2.cvtColor(np.array(self.sct.grab(self.mon)),cv2.COLOR_RGBA2RGB)
+		img = cv2.cvtColor(np.array(self.sct.grab(self.mon)),cv2.COLOR_RGBA2RGB)
+		check,self.image = cv2.imencode('.jpg', img, self.encode_param)
 		self.lock.release()
 		return self.image
 
 	def connectTf(self):
 		self.tf=TFNet(self.getOption(self.option))
 		
-
-	'''def run(self):
+		'''
+	def run(self):
 		while(self.running):			
 			self.lock.acquire()
 			self.image = cv2.cvtColor(np.array(self.sct.grab(self.mon)),cv2.COLOR_RGBA2RGB)
 			self.result = self.tf.return_predict(self.image)
 			cv2.imshow("Stream Window",self.image)
 			cv2.waitKey(1)
-			self.lock.release()'''
+			self.lock.release()
+			'''
 
 	def getOption(self,option):
 		hp="F:\\AnacondaProjects"
@@ -65,6 +68,11 @@ class VideoCapture(Thread):
 		tfOptions = {"hand" : optionHand, "person" : optionPerson}
 		return tfOptions[option]
 
+	def preconnect(self):
+		self.tf=TFNet(self.getOption(self.option))
+		img=cv2.cvtColor(np.array(self.sct.grab(self.mon)),cv2.COLOR_RGBA2RGB)
+		self.result = self.tf.return_predict(img)
+
 
 
 def main():
@@ -73,8 +81,6 @@ def main():
 	capHand = VideoCapture("hand")
 	capPerson = VideoCapture("person")
 	print('setting up on capThread.')
-	capHand.connectTf()
-	capPerson.connectTf()
 	capHand.start()
 	capPerson.start()
 	print('starting up on capThread.')
@@ -84,48 +90,51 @@ def main():
 	sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 	sock.bind(server_address)
 	while(True):
-		img=capPerson.getImage()
-		cv2.imshow("capture",img)
-		cv2.waitKey(1)
 		data, address = sock.recvfrom(4)
 		if(data == b'hdg'):
 			img,result = capHand.getBuffer()
-			dopick = {'image' : img, 'result' : result}
-			buffer = json.dumps(dopick)
+			dopick = {'image' : img.tobytes(), 'result' : result}
+			buffer = pickle.dumps(dopick,protocol=2)
 			if buffer is None:
 				continue
+			
 			if len(buffer) > 65507:
 				print(len(buffer))
 				print("The message is too large to be sent within a single UDP datagram. We do not handle splitting the message in multiple datagrams")
 				sock.sendto(b'FAIL',address)
 				continue
-			sock.sendto(buffer.encode(), address)
+			
+			sock.sendto(buffer, address)
 
 		elif(data == b'psg'):
 			img,result = capPerson.getBuffer()
-			dopick = {'image' : img, 'result' : result}
-			buffer = json.dumps(dopick)
+			dopick = {'image' : img.tobytes(), 'result' : result}
+			buffer = pickle.dumps(dopick,protocol=2)
 			if buffer is None:
 				continue
+			
 			if len(buffer) > 65507:
 				print(len(buffer))
 				print("The message is too large to be sent within a single UDP datagram. We do not handle splitting the message in multiple datagrams")
 				sock.sendto(b'FAIL',address)
 				continue
-			sock.sendto(buffer.encode(), address)
+			
+			sock.sendto(buffer, address)
 
 		elif(data == b'get'):
 			img = capPerson.getImage()
-			dopick = {'image' : img}
-			buffer = json.dumps(dopick)
+			dopick = {'image' : img.tobytes()}
+			buffer = pickle.dumps(dopick,protocol=2)
 			if buffer is None:
 				continue
+			
 			if len(buffer) > 65507:
 				print(len(buffer))
 				print("The message is too large to be sent within a single UDP datagram. We do not handle splitting the message in multiple datagrams")
 				sock.sendto(b'FAIL',address)
 				continue
-			sock.sendto(buffer.encode(), address)
+			
+			sock.sendto(buffer, address)
 
 		elif(data == "quit"):
 			capHand.stop()
@@ -138,10 +147,5 @@ def main():
 
 if __name__=='__main__':
 	main()
-
-
-
-
-
 
 
