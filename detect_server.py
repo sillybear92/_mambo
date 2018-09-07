@@ -2,7 +2,7 @@
 
 import socket
 import cv2
-import pickle
+import json
 import numpy as np
 from mss import mss
 from threading import Thread, Lock
@@ -22,14 +22,15 @@ class VideoCapture(Thread):
 		self.result = None
 		self.option = option
 		self.tf=None
-		
+		self.encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 95]
 
 	def stop(self):
 		self.running = False
 
 	def getBuffer(self):
 		self.lock.acquire()
-		self.image = cv2.cvtColor(np.array(self.sct.grab(self.mon)),cv2.COLOR_RGBA2RGB)
+		img=cv2.cvtColor(np.array(self.sct.grab(self.mon)),cv2.COLOR_RGBA2RGB)
+		check,self.image = cv2.imencode('.jpg', img, self.encode_param)
 		self.result = self.tf.return_predict(self.image)
 		self.lock.release()
 		return self.image,self.result
@@ -90,38 +91,41 @@ def main():
 		if(data == b'hdg'):
 			img,result = capHand.getBuffer()
 			dopick = {'image' : img, 'result' : result}
-			buffer = pickle.dumps(dopick)
+			buffer = json.dumps(dopick)
 			if buffer is None:
 				continue
 			if len(buffer) > 65507:
+				print(len(buffer))
 				print("The message is too large to be sent within a single UDP datagram. We do not handle splitting the message in multiple datagrams")
-				sock.sendto("FAIL",address)
+				sock.sendto(b'FAIL',address)
 				continue
-			sock.sendto(buffer.tobytes(), address)
+			sock.sendto(buffer.encode(), address)
 
 		elif(data == b'psg'):
 			img,result = capPerson.getBuffer()
 			dopick = {'image' : img, 'result' : result}
-			buffer = pickle.dumps(dopick)
+			buffer = json.dumps(dopick)
 			if buffer is None:
 				continue
 			if len(buffer) > 65507:
+				print(len(buffer))
 				print("The message is too large to be sent within a single UDP datagram. We do not handle splitting the message in multiple datagrams")
-				sock.sendto("FAIL",address)
+				sock.sendto(b'FAIL',address)
 				continue
-			sock.sendto(buffer.tobytes(), address)
+			sock.sendto(buffer.encode(), address)
 
 		elif(data == b'get'):
 			img = capPerson.getImage()
 			dopick = {'image' : img}
-			buffer = pickle.dumps(dopick)
+			buffer = json.dumps(dopick)
 			if buffer is None:
 				continue
 			if len(buffer) > 65507:
+				print(len(buffer))
 				print("The message is too large to be sent within a single UDP datagram. We do not handle splitting the message in multiple datagrams")
-				sock.sendto("FAIL",address)
+				sock.sendto(b'FAIL',address)
 				continue
-			sock.sendto(buffer.tobytes(), address)
+			sock.sendto(buffer.encode(), address)
 
 		elif(data == "quit"):
 			capHand.stop()

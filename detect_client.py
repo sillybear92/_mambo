@@ -10,9 +10,9 @@ import socket
 import cv2
 import numpy as np
 import sys
-import pickle
 import time
 import imutils
+import json
 
 
 class netInfo:
@@ -217,10 +217,10 @@ def sendData(message,client):
 	if len(data) == 4:
 		if(data == "FAIL"):
 			return -1,-1
-	unpick = pickle.loads(data)
-	img = unpick["image"]
+	unpick = json.loads(data.decode())
+	img = unpick.get("image")
 	try:
-		result = unpick["result"]
+		result = unpick.get("result")	
 	except:
 		result = None
 	return img, result
