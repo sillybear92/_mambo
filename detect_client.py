@@ -14,6 +14,7 @@ import pickle
 import time
 import imutils
 
+
 class netInfo:
 	def __init__(self):
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -144,6 +145,8 @@ def get_target(tracker,target_hand):
 	target=[]
 	targetFlag=0
 	img,result = sendData("psg",client)
+	if result==-1:
+				return 
 	person=draw_rectangle(img,result)
 	neartarget=abs(np.array([[[tx,ty,bx,by]] for [tx,ty,bx,by] in person]).reshape(-1,4)\
 	 - np.array([target_hand[-1][0],target_hand[-1][1],target_hand[-1][0],target_hand[-1][1]]).reshape(-1,4)).min(-1)
@@ -168,6 +171,7 @@ def setTracker(img,tracker,target):
 '''
 Reference:https://www.learnopencv.com/multitracker-multiple-object-tracking-using-opencv-c-python/'''
 def createTrackerByName(trackerType):
+  trackerTypes = ['BOOSTING', 'MIL', 'KCF','TLD', 'MEDIANFLOW', 'GOTURN', 'MOSSE', 'CSRT']
   # Create a tracker based on tracker name
   if trackerType == trackerTypes[0]:
     tracker = cv2.TrackerBoosting_create()
@@ -208,11 +212,11 @@ def sendData(message,client):
 		data,server = client.sock.recvfrom(65507)
 	except socket.timeout as err:
 		print("Timeout !! again !! ")
-		continue
+		return -1,-1
 	print("Fragment size: {}".format(len(data)))
 	if len(data) == 4:
 		if(data == "FAIL"):
-			continue
+			return -1,-1
 	unpick = pickle.loads(data)
 	img = unpick["image"]
 	try:
@@ -229,11 +233,12 @@ def main():
 	hand=[]
 	rec_info=[]
 	targetOn=0
-	trackerTypes = ['BOOSTING', 'MIL', 'KCF','TLD', 'MEDIANFLOW', 'GOTURN', 'MOSSE', 'CSRT']
 	tracker=createTrackerByName("KCF")
 	while(True):
 		if not targetOn:
 			img,result = sendData("hdg",client)
+			if result==-1:
+				continue
 			gray=cv2.cvtColor(img,cv2.COLOR_RGB2GRAY)
 			mask=np.ones_like(img,np.uint8)
 			# Display FPS
@@ -246,6 +251,8 @@ def main():
 			img=cv2.add(img,mask)
 		else:
 			img,result = sendData("get",client)
+			if result==-1:
+				continue
 			# Display FPS
 			prevTime=dp_fps(img,prevTime)
 			updateTracker(img)
