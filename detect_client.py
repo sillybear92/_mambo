@@ -12,7 +12,7 @@ import numpy as np
 import sys
 import time
 import imutils
-import json
+import pickle
 
 
 class netInfo:
@@ -25,6 +25,27 @@ class netInfo:
 		self.client_port = 5001
 		self.sock.bind((self.client_host,self.client_port))
 		self.sock.settimeout(0.5)
+
+	def sendData(self,message):
+		self.sock.sendto(message,self.server_address)
+		try:
+			data,server = self.sock.recvfrom(65507)
+		except socket.timeout as err:
+			print("Timeout !! again !! ")
+			return -1,-1
+		print("Fragment size: {}".format(len(data)))
+		if len(data) == 4:
+			if(data == "FAIL"):
+				return -1,-1
+		unpick = pickle.loads(data)
+		i = unpick["image"]
+		array = np.frombuffer(i, dtype=np.dtype('uint8'))
+		img = cv2.imdecode(array,1)
+		try:
+			result = unpick["result"]	
+		except:
+			result = None
+		return img, result
 
 
 
@@ -101,7 +122,7 @@ def distance_Box(old_track,new_track):
 	return n_track
 
 # Shape from Hand moving line
-def shape_detect(mask,rec_info,targetOn,tracker):
+def shape_detect(client,mask,rec_info,targetOn,tracker):
 	grayMask=cv2.cvtColor(mask,cv2.COLOR_RGB2GRAY)
 	blurred=cv2.GaussianBlur(grayMask,(5,5),0)
 	thresh=cv2.threshold(blurred,60,255,cv2.THRESH_BINARY)[1]
@@ -129,10 +150,10 @@ def shape_detect(mask,rec_info,targetOn,tracker):
 			else:
 				for x,y in zip(p_1,p_2):
 					rec_info[x].append([cX,cY])
-					if len(rec_info[x])>50:
+					if len(rec_info[x])>30:
 						if not targetOn:
 							target_hand.append(c[-1][0])
-							targetOn=get_target(tracker,target_hand)
+							targetOn=get_target(client,tracker,target_hand)
 						del rec_info[x][0]
 		else:
 			shape = "not_detect"
@@ -141,16 +162,16 @@ def shape_detect(mask,rec_info,targetOn,tracker):
 	return rec_info,targetOn
 
 
-def get_target(tracker,target_hand):
+def get_target(client,tracker,target_hand):
 	target=[]
 	targetFlag=0
-	img,result = sendData("psg",client)
+	img,result = client.sendData("psg")
 	if result==-1:
 				return 
 	person=draw_rectangle(img,result)
 	neartarget=abs(np.array([[[tx,ty,bx,by]] for [tx,ty,bx,by] in person]).reshape(-1,4)\
 	 - np.array([target_hand[-1][0],target_hand[-1][1],target_hand[-1][0],target_hand[-1][1]]).reshape(-1,4)).min(-1)
-	near=neartarget[-1]
+	near=neartarget[-1]+1
 	for [tx,ty,bx,by] in person:
 		if targetFlag:
 			continue
@@ -158,15 +179,18 @@ def get_target(tracker,target_hand):
 			and bx+near>target_hand[-1][0] and by+near>target_hand[-1][1]):
 			target.append([tx,ty,bx,by])
 			targetFlag=1
-	setTracker(img,tracker,target)
+	targetFlag=setTracker(img,tracker,target)
 	return targetFlag
 
 def setTracker(img,tracker,target):
+	if target==None:
+		return 0
 	tx,ty,bx,by=target[-1][0],target[-1][1],target[-1][2],target[-1][3]
 	bbox=(tx,ty,bx-tx,by-ty)
 	ok=tracker.init(img,bbox)
 	cv2.rectangle(img,(tx,ty),(bx,by),(0,255,255),3)
 	cv2.putText(img,"Target",(bx, ty-5), cv2.FONT_HERSHEY_COMPLEX_SMALL,1,(0,255,255),2)
+	return 1
 
 '''
 Reference:https://www.learnopencv.com/multitracker-multiple-object-tracking-using-opencv-c-python/'''
@@ -197,7 +221,7 @@ def createTrackerByName(trackerType):
       print(t)
   return tracker
 
-def updateTracker(img):
+def updateTracker(tracker,img):
 	ok,bbox=tracker.update(img)
 	if ok:
 		tx,ty,bx,by=int(bbox[0]),int(bbox[1]),int(bbox[0]+bbox[2]),int(bbox[1]+bbox[3])
@@ -206,24 +230,7 @@ def updateTracker(img):
 	else:
 		cv2.putText(img, "Tracking failure detected", (100,80), cv2.FONT_HERSHEY_SIMPLEX, 0.75,(0,0,255),2)
 
-def sendData(message,client):
-	client.sock.sendto(message,client.server_address)
-	try:
-		data,server = client.sock.recvfrom(65507)
-	except socket.timeout as err:
-		print("Timeout !! again !! ")
-		return -1,-1
-	print("Fragment size: {}".format(len(data)))
-	if len(data) == 4:
-		if(data == "FAIL"):
-			return -1,-1
-	unpick = json.loads(data.decode())
-	img = unpick.get("image")
-	try:
-		result = unpick.get("result")	
-	except:
-		result = None
-	return img, result
+
 
 def main():
 	client=netInfo()
@@ -236,7 +243,7 @@ def main():
 	tracker=createTrackerByName("KCF")
 	while(True):
 		if not targetOn:
-			img,result = sendData("hdg",client)
+			img,result = client.sendData("hdg")
 			if result==-1:
 				continue
 			gray=cv2.cvtColor(img,cv2.COLOR_RGB2GRAY)
@@ -247,15 +254,15 @@ def main():
 			track=distance_Box(track,center_Box(hand))
 			cv2.polylines(mask,([np.int32(tr) for tr in track]),False,(255,255,0),3)
 			#detect_shape
-			rec_info,targetOn=shape_detect(mask,rec_info,targetOn,tracker)
+			rec_info,targetOn=shape_detect(client,mask,rec_info,targetOn,tracker)
 			img=cv2.add(img,mask)
 		else:
-			img,result = sendData("get",client)
+			img,result = client.sendData("get")
 			if result==-1:
 				continue
 			# Display FPS
 			prevTime=dp_fps(img,prevTime)
-			updateTracker(img)
+			updateTracker(tracker,img)
 		cv2.imshow('video',img)
 		if ord('q')==cv2.waitKey(10):
 			exit(0)
