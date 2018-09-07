@@ -1,4 +1,3 @@
-#!/home/lee/anaconda2/bin/python
 #coding=utf8
 '''
 	shape_detect(): OpenCV shape detection 
@@ -6,26 +5,27 @@
 	create tracker : Multiple Object Tracking using OpenCV 
 	-> https://www.learnopencv.com/multitracker-multiple-object-tracking-using-opencv-c-python/
 '''
-from darkflow.net.build import TFNet
+
+import socket
 import cv2
 import numpy as np
-import urllib
+import sys
+import pickle
 import time
-from PIL import Image
-from mss import mss
 import imutils
 
-#TF Options
-hp="F:\\AnacondaProjects"
-'''options={"pbLoad":hp+"\\darkflow-master\\built_graph\\new-hand-voc.pb",
- "metaLoad":hp+ "\\darkflow-master\\built_graph\\new-hand-voc.meta",
- "threshold":0.4, "gpu":0.7}'''
-optionHand={"pbLoad":hp+"\\darkflow-master\\built_graph\\hand180905.pb",
- "metaLoad":hp+ "\\darkflow-master\\built_graph\\hand180905.meta",
- "threshold":0.4, "gpu":0.7}
-optionPerson={"pbLoad":hp+"\\darkflow-master\\built_graph\\yolo.pb",
- "metaLoad":hp+ "\\darkflow-master\\built_graph\\yolo.meta",
- "threshold":0.4, "gpu":0.7}
+class netInfo:
+	def __init__(self):
+		self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+		self.host = sys.argv[1]
+		self.port = int(sys.argv[2])
+		self.server_address = (self.host,self.port)
+		self.client_host = '0.0.0.0'
+		self.client_port = 5001
+		self.sock.bind((self.client_host,self.client_port))
+		self.sock.settimeout(0.5)
+
+
 
 # Draw_rec and person motion recognition save
 def draw_rectangle(img,result):
@@ -100,7 +100,7 @@ def distance_Box(old_track,new_track):
 	return n_track
 
 # Shape from Hand moving line
-def shape_detect(img,mask,rec_info,targetOn,tracker):
+def shape_detect(mask,rec_info,targetOn,tracker):
 	grayMask=cv2.cvtColor(mask,cv2.COLOR_RGB2GRAY)
 	blurred=cv2.GaussianBlur(grayMask,(5,5),0)
 	thresh=cv2.threshold(blurred,60,255,cv2.THRESH_BINARY)[1]
@@ -131,7 +131,7 @@ def shape_detect(img,mask,rec_info,targetOn,tracker):
 					if len(rec_info[x])>50:
 						if not targetOn:
 							target_hand.append(c[-1][0])
-							targetOn=get_target(img,tracker,target_hand)
+							targetOn=get_target(tracker,target_hand)
 						del rec_info[x][0]
 		else:
 			shape = "not_detect"
@@ -139,15 +139,11 @@ def shape_detect(img,mask,rec_info,targetOn,tracker):
 		cv2.putText(mask,shape,(cX,cY),cv2.FONT_HERSHEY_SIMPLEX,0.5,(255,255,255),2)
 	return rec_info,targetOn
 
-def preconnect_Net(mon):
-	img=cv2.cvtColor(np.array(sct.grab(mon)),cv2.COLOR_RGBA2RGB)
-	result=handTf.return_predict(img)
-	result=personTf.return_predict(img)
 
-def get_target(img,tracker,target_hand):
+def get_target(tracker,target_hand):
 	target=[]
 	targetFlag=0
-	result=personTf.return_predict(img)
+	img,result = sendData("psg",client)
 	person=draw_rectangle(img,result)
 	neartarget=abs(np.array([[[tx,ty,bx,by]] for [tx,ty,bx,by] in person]).reshape(-1,4)\
 	 - np.array([target_hand[-1][0],target_hand[-1][1],target_hand[-1][0],target_hand[-1][1]]).reshape(-1,4)).min(-1)
@@ -206,15 +202,28 @@ def updateTracker(img):
 	else:
 		cv2.putText(img, "Tracking failure detected", (100,80), cv2.FONT_HERSHEY_SIMPLEX, 0.75,(0,0,255),2)
 
+def sendData(message,client):
+	client.sock.sendto(message,client.server_address)
+	try:
+		data,server = client.sock.recvfrom(65507)
+	except socket.timeout as err:
+		print("Timeout !! again !! ")
+		continue
+	print("Fragment size: {}".format(len(data)))
+	if len(data) == 4:
+		if(data == "FAIL"):
+			continue
+	unpick = pickle.loads(data)
+	img = unpick["image"]
+	try:
+		result = unpick["result"]
+	except:
+		result = None
+	return img, result
 
-if __name__ == '__main__':
-	handTf=TFNet(optionHand)
-	personTf=TFNet(optionPerson)
-	#Capture x,y position
-	mon={'top':150, 'left':150, 'width':800, 'height':600}
-	#window ScreenCapture
-	sct=mss()
-	print("============ Video Start ============")
+def main():
+	client=netInfo()
+	print ("server_address is ", client.server_address[0],client.server_address[1])
 	prevTime=0
 	track=[]
 	hand=[]
@@ -222,22 +231,21 @@ if __name__ == '__main__':
 	targetOn=0
 	trackerTypes = ['BOOSTING', 'MIL', 'KCF','TLD', 'MEDIANFLOW', 'GOTURN', 'MOSSE', 'CSRT']
 	tracker=createTrackerByName("KCF")
-	preconnect_Net(mon)
 	while(True):
-		img=cv2.cvtColor(np.array(sct.grab(mon)),cv2.COLOR_RGBA2RGB)
-		gray=cv2.cvtColor(img,cv2.COLOR_RGB2GRAY)
-		mask=np.ones_like(img,np.uint8)
 		if not targetOn:
-			result=handTf.return_predict(img)
+			img,result = sendData("hdg",client)
+			gray=cv2.cvtColor(img,cv2.COLOR_RGB2GRAY)
+			mask=np.ones_like(img,np.uint8)
 			# Display FPS
 			prevTime=dp_fps(img,prevTime)
 			hand=draw_rectangle(img,result)
 			track=distance_Box(track,center_Box(hand))
 			cv2.polylines(mask,([np.int32(tr) for tr in track]),False,(255,255,0),3)
 			#detect_shape
-			rec_info,targetOn=shape_detect(img,mask,rec_info,targetOn,tracker)
+			rec_info,targetOn=shape_detect(mask,rec_info,targetOn,tracker)
 			img=cv2.add(img,mask)
 		else:
+			img,result = sendData("get",client)
 			# Display FPS
 			prevTime=dp_fps(img,prevTime)
 			updateTracker(img)
@@ -246,3 +254,5 @@ if __name__ == '__main__':
 			exit(0)
 	print('== Turn over ==')
 
+if __name__=='__main__':
+	main()
