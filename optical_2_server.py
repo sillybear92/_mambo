@@ -20,9 +20,9 @@ hp="F:\\AnacondaProjects"
 '''options={"pbLoad":hp+"\\darkflow-master\\built_graph\\new-hand-voc.pb",
  "metaLoad":hp+ "\\darkflow-master\\built_graph\\new-hand-voc.meta",
  "threshold":0.4, "gpu":0.7}'''
-optionHand={"pbLoad":hp+"\\darkflow-master\\built_graph\\hand180905.pb",
- "metaLoad":hp+ "\\darkflow-master\\built_graph\\hand180905.meta",
- "threshold":0.4, "gpu":0.7}
+optionHand={"pbLoad":hp+"\\darkflow-master\\cfg\\tartget-yolo.cfg",
+ "load":hp+ "\\darkflow-master\\bin\\yolo.weights",
+ "gpu":0.7, "train","trainer":"adam",""}
 optionPerson={"pbLoad":hp+"\\darkflow-master\\built_graph\\yolo.pb",
  "metaLoad":hp+ "\\darkflow-master\\built_graph\\yolo.meta",
  "threshold":0.4, "gpu":0.7}

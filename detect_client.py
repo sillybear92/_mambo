@@ -171,7 +171,7 @@ def get_target(client,tracker,target_hand):
 	person=draw_rectangle(img,result)
 	neartarget=abs(np.array([[[tx,ty,bx,by]] for [tx,ty,bx,by] in person]).reshape(-1,4)\
 	 - np.array([target_hand[-1][0],target_hand[-1][1],target_hand[-1][0],target_hand[-1][1]]).reshape(-1,4)).min(-1)
-	near=neartarget[-1]+1
+	near=neartarget[-1]+10
 	for [tx,ty,bx,by] in person:
 		if targetFlag:
 			continue
@@ -183,7 +183,7 @@ def get_target(client,tracker,target_hand):
 	return targetFlag
 
 def setTracker(img,tracker,target):
-	if target==None:
+	if len(target)==0:
 		return 0
 	tx,ty,bx,by=target[-1][0],target[-1][1],target[-1][2],target[-1][3]
 	bbox=(tx,ty,bx-tx,by-ty)

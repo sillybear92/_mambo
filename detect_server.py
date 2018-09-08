@@ -62,8 +62,8 @@ class VideoCapture(Thread):
 		optionHand={"pbLoad":hp+"\\darkflow-master\\built_graph\\hand180905.pb",
 		 "metaLoad":hp+ "\\darkflow-master\\built_graph\\hand180905.meta",
 		 "threshold":0.4, "gpu":0.7}
-		optionPerson={"pbLoad":hp+"\\darkflow-master\\built_graph\\yolo.pb",
-		 "metaLoad":hp+ "\\darkflow-master\\built_graph\\yolo.meta",
+		optionPerson={"pbLoad":hp+"\\darkflow-master\\built_graph\\yolo180905.pb",
+		 "metaLoad":hp+ "\\darkflow-master\\built_graph\\yolo180905.meta",
 		 "threshold":0.4, "gpu":0.7}
 		tfOptions = {"hand" : optionHand, "person" : optionPerson}
 		return tfOptions[option]
@@ -84,6 +84,7 @@ def main():
 	capHand.start()
 	capPerson.start()
 	print('starting up on capThread.')
+starting up on capThread.
 	sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 	server_address = (host, port)
 	print('starting up on %s port %s\n' % server_address)
