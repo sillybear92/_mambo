@@ -63,9 +63,10 @@ def draw_rectangle(img,result):
 		bottom_x = obj['bottomright']['x']
 		bottom_y = obj['bottomright']['y']
 		label = obj['label']
-		cv2.rectangle(img,(top_x, top_y),(bottom_x, bottom_y), (0, 255, 0),2)
-		cv2.putText(img, label+' - ' + str(  "{0:.0f}%".format(confidence * 100) ),
-			(bottom_x, top_y-5),  cv2.FONT_HERSHEY_COMPLEX_SMALL,0.8,(0, 255, 0),1)
+		if label=='hand':
+			cv2.rectangle(img,(top_x, top_y),(bottom_x, bottom_y), (0, 255, 0),2)
+			cv2.putText(img, label+' - ' + str(  "{0:.0f}%".format(confidence * 100) ),
+				(bottom_x, top_y-5),  cv2.FONT_HERSHEY_COMPLEX_SMALL,0.8,(0, 255, 0),1)
 		n_detect.append([top_x,top_y,bottom_x,bottom_y])
 	return n_detect
 
@@ -153,7 +154,7 @@ def shape_detect(client,mask,rec_info,targetOn,tracker):
 					if len(rec_info[x])>30:
 						if not targetOn:
 							target_hand.append(c[-1][0])
-							targetOn=get_target(client,tracker,target_hand)
+							targetOn=get_target(client,tracker,target_hand,targetOn)
 						del rec_info[x][0]
 		else:
 			shape = "not_detect"
@@ -162,36 +163,33 @@ def shape_detect(client,mask,rec_info,targetOn,tracker):
 	return rec_info,targetOn
 
 
-def get_target(client,tracker,target_hand):
+def get_target(client,tracker,obj,targetOn=1):
 	target=[]
-	targetFlag=0
 	img,result = client.sendData("psg")
 	if result==-1:
 				return 
 	person=draw_rectangle(img,result)
 	neartarget=abs(np.array([[[tx,ty,bx,by]] for [tx,ty,bx,by] in person]).reshape(-1,4)\
-	 - np.array([target_hand[-1][0],target_hand[-1][1],target_hand[-1][0],target_hand[-1][1]]).reshape(-1,4)).min(-1)
-	near=neartarget[-1]+10
-	for [tx,ty,bx,by] in person:
-		if targetFlag:
-			continue
-		if (tx-near<target_hand[-1][0] and ty-near<target_hand[-1][1] 
-			and bx+near>target_hand[-1][0] and by+near>target_hand[-1][1]):
-			target.append([tx,ty,bx,by])
-			targetFlag=1
-	targetFlag=setTracker(img,tracker,target)
-	return targetFlag
+	 - np.array([obj[0],obj[1],obj[2],obj[3]]).reshape(-1,4))
+	maxi=neartarget.max(-1)
+	mini=neartarget.min(-1)
+	if len(neartarget)==0:
+		target=[obj]
+	else:
+		minimum=maxi.argmin()
+		target=[person[minimum]]
+		targetOn=setTracker(img,tracker,target,targetOn)
+	return targetOn,target
 
-def setTracker(img,tracker,target):
-	if len(target)==0:
-		return 0
-	tx,ty,bx,by=target[-1][0],target[-1][1],target[-1][2],target[-1][3]
-	bbox=(tx,ty,bx-tx,by-ty)
-	ok=tracker.init(img,bbox)
+def setTracker(img,tracker,target,targetOn=1):
+	tx,ty,bx,by=int(target[-1][0]),int(target[-1][1]),int(target[-1][2]),int(target[-1][3])
+	if not targetOn:
+		bbox=(tx,ty,bx-tx,by-ty)
+		ok=tracker.init(img,bbox)
+		targetOn=1
 	cv2.rectangle(img,(tx,ty),(bx,by),(0,255,255),3)
 	cv2.putText(img,"Target",(bx, ty-5), cv2.FONT_HERSHEY_COMPLEX_SMALL,1,(0,255,255),2)
-	return 1
-
+	return targetOn
 '''
 Reference:https://www.learnopencv.com/multitracker-multiple-object-tracking-using-opencv-c-python/'''
 def createTrackerByName(trackerType):
@@ -221,15 +219,17 @@ def createTrackerByName(trackerType):
       print(t)
   return tracker
 
-def updateTracker(tracker,img):
+def updateTracker(client,tracker,prevtarget):
 	ok,bbox=tracker.update(img)
+	bbox=[int(bbox[0]),int(bbox[1]),int(bbox[0]+bbox[2]),int(bbox[1]+bbox[3])]
+	check=0
+	print('bbox:',bbox)
+	print('prevtarget:',prevtarget)
 	if ok:
-		tx,ty,bx,by=int(bbox[0]),int(bbox[1]),int(bbox[0]+bbox[2]),int(bbox[1]+bbox[3])
-		cv2.rectangle(img,(tx,ty),(bx,by),(0,255,255),3)
-		cv2.putText(img,"Target",(bx, ty-5), cv2.FONT_HERSHEY_COMPLEX_SMALL,1,(0,255,255),2)
+		check,target=get_target(client,tracker,bbox)
 	else:
-		cv2.putText(img, "Tracking failure detected", (100,80), cv2.FONT_HERSHEY_SIMPLEX, 0.75,(0,0,255),2)
-
+		check,target=get_target(client,tracker,prevtarget[0])
+	return target
 
 
 def main():
@@ -240,6 +240,7 @@ def main():
 	hand=[]
 	rec_info=[]
 	targetOn=0
+	prevtarget=[]
 	tracker=createTrackerByName("KCF")
 	while(True):
 		if not targetOn:
@@ -262,7 +263,7 @@ def main():
 				continue
 			# Display FPS
 			prevTime=dp_fps(img,prevTime)
-			updateTracker(tracker,img)
+			prevtarget=updateTracker(client,tracker,prevtarget)
 		cv2.imshow('video',img)
 		if ord('q')==cv2.waitKey(10):
 			exit(0)
