@@ -40,8 +40,11 @@ optionPerson={"pbLoad":hp+"\\darkflow-master\\built_graph\\yolo180905.pb",
  "metaLoad":hp+ "\\darkflow-master\\built_graph\\yolo180905.meta",
  "threshold":0.4, "gpu":0.7}
 personTf=TFNet(optionPerson)
-img=cv2.cvtColor(np.array(sct.grab(mon)),cv2.COLOR_RGBA2RGB)
 
+#Capture x,y position
+mon={'top':150, 'left':150, 'width':800, 'height':600}
+#window ScreenCapture
+sct=mss()
 
 prevTime=0
 
