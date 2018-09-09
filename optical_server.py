@@ -9,10 +9,10 @@ from PIL import Image
 from mss import mss
 
 #Flow Option
-hp="C:\\Users\\lee\\AnacondaProjects"
-options={"pbLoad":hp+"\\darkflow-master\\built_graph\\hand-yolo.pb",
- "metaLoad":hp+ "\\darkflow-master\\built_graph\\hand-yolo.meta",
- "threshold":0.4, "gpu":0.7}
+hp="F:\\AnacondaProjects"
+options={"pbLoad":hp+"\\darkflow-master\\built_graph\\detect180909.pb",
+ "metaLoad":hp+ "\\darkflow-master\\built_graph\\detect180909.meta",
+ "threshold":0.3, "gpu":0.7}
 '''options={"load": hp+"\\darkflow-master\\cfg\\handvocV2-yolo.cfg",
  "load":hp+"\\darkflow-master\\ckpt\\handvocV2-yolo-51750.data-00000-of-00001",
  "threshold":0.1, "gpu":0.7,"labels":hp+"\\darkflow-master\\labels.txt"}'''
@@ -37,9 +37,10 @@ def draw_rec(img,result):
 		#cv2.rectangle(img,(top_x, top_y),(bottom_x, bottom_y), (0, 255, 0),2)
 		#cv2.putText(img, label+' - ' + str(  "{0:.0f}%".format(confidence * 100) ),(bottom_x, top_y-5),  cv2.FONT_HERSHEY_COMPLEX_SMALL,0.8,(0, 255, 0),1)
 		# Person Recognition & Boxing
-		if(confidence>0.1 and label=='hand'):
+		if(confidence>0.1):
 			cv2.rectangle(img,(top_x, top_y),(bottom_x, bottom_y), (0, 255, 0),2)
 			cv2.putText(img, label+' - ' + str(  "{0:.0f}%".format(confidence * 100) ),(bottom_x, top_y-5),  cv2.FONT_HERSHEY_COMPLEX_SMALL,0.8,(0, 255, 0),1)
+		if label == 'hand':
 			n_hand.append([top_x,top_y,bottom_x,bottom_y])
 	return n_hand
 
