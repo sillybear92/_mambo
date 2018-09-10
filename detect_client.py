@@ -35,8 +35,14 @@ class netInfo:
 			return -1,-1
 		print("Fragment size: {}".format(len(data)))
 		if len(data) == 4:
-			if(data == "FAIL"):
-				return -1,-1
+			while(len(data)==4):
+				self.sock.sendto(message,self.server_address)
+				try:
+					data,server = self.sock.recvfrom(65507)
+				except socket.timeout as err:
+					print("Timeout !! again !! ")
+					return -1,-1
+				print("Fragment size: {}".format(len(data)))
 		unpick = pickle.loads(data)
 		i = unpick["image"]
 		array = np.frombuffer(i, dtype=np.dtype('uint8'))
@@ -153,21 +159,21 @@ def shape_detect(client,mask,rec_info,targetOn,tracker):
 					rec_info[x].append([cX,cY])
 					if len(rec_info[x])>30:
 						if not targetOn:
-							target_hand.append(c[-1][0])
-							targetOn=get_target(client,tracker,target_hand,targetOn)
+							target_hand.append([c[-1][0][0],c[-1][0][1],c[-1][0][0],c[-1][0][1]])
+							img,result = client.sendData(b'psg')
+							if result==-1:
+								return 
+							targetOn,target=get_target(img,result,tracker,target_hand[0],targetOn)
 						del rec_info[x][0]
 		else:
 			shape = "not_detect"
 		cv2.drawContours(mask,[c],-1,(0,255,0),2)
 		cv2.putText(mask,shape,(cX,cY),cv2.FONT_HERSHEY_SIMPLEX,0.5,(255,255,255),2)
-	return rec_info,targetOn
+	return rec_info,targetOn,target
 
 
-def get_target(client,tracker,obj,targetOn=1):
+def get_target(img,result,tracker,obj,targetOn=1):
 	target=[]
-	img,result = client.sendData("psg")
-	if result==-1:
-				return 
 	person=draw_rectangle(img,result)
 	neartarget=abs(np.array([[[tx,ty,bx,by]] for [tx,ty,bx,by] in person]).reshape(-1,4)\
 	 - np.array([obj[0],obj[1],obj[2],obj[3]]).reshape(-1,4))
@@ -219,16 +225,16 @@ def createTrackerByName(trackerType):
       print(t)
   return tracker
 
-def updateTracker(client,tracker,prevtarget):
+def updateTracker(img,result,tracker,prevtarget):
 	ok,bbox=tracker.update(img)
 	bbox=[int(bbox[0]),int(bbox[1]),int(bbox[0]+bbox[2]),int(bbox[1]+bbox[3])]
 	check=0
 	print('bbox:',bbox)
 	print('prevtarget:',prevtarget)
 	if ok:
-		check,target=get_target(client,tracker,bbox)
+		check,target=get_target(img,result,tracker,bbox)
 	else:
-		check,target=get_target(client,tracker,prevtarget[0])
+		check,target=get_target(img,result,tracker,prevtarget[0])
 	return target
 
 
@@ -244,7 +250,7 @@ def main():
 	tracker=createTrackerByName("KCF")
 	while(True):
 		if not targetOn:
-			img,result = client.sendData("hdg")
+			img,result = client.sendData(b'hdg')
 			if result==-1:
 				continue
 			gray=cv2.cvtColor(img,cv2.COLOR_RGB2GRAY)
@@ -255,15 +261,15 @@ def main():
 			track=distance_Box(track,center_Box(hand))
 			cv2.polylines(mask,([np.int32(tr) for tr in track]),False,(255,255,0),3)
 			#detect_shape
-			rec_info,targetOn=shape_detect(client,mask,rec_info,targetOn,tracker)
+			rec_info,targetOn,prevtarget=shape_detect(client,mask,rec_info,targetOn,tracker)
 			img=cv2.add(img,mask)
 		else:
-			img,result = client.sendData("get")
+			img,result = client.sendData(b'psg')
 			if result==-1:
 				continue
 			# Display FPS
 			prevTime=dp_fps(img,prevTime)
-			prevtarget=updateTracker(client,tracker,prevtarget)
+			prevtarget=updateTracker(img,result,tracker,prevtarget)
 		cv2.imshow('video',img)
 		if ord('q')==cv2.waitKey(10):
 			exit(0)

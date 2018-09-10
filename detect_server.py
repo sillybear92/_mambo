@@ -22,7 +22,7 @@ class VideoCapture(Thread):
 		self.result = None
 		self.option = option
 		self.tf=None
-		self.encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 70]
+		self.encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 30]
 		self.preconnect()
 
 	def stop(self):
@@ -77,14 +77,15 @@ class VideoCapture(Thread):
 
 def main():
 	host = '0.0.0.0'
-	port = 5001
+	#port = 5001
+	port = 6666
 	capHand = VideoCapture("hand")
 	capPerson = VideoCapture("person")
 	print('setting up on capThread.')
 	capHand.start()
 	capPerson.start()
 	print('starting up on capThread.')
-starting up on capThread.
+	#starting up on capThread.
 	sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 	server_address = (host, port)
 	print('starting up on %s port %s\n' % server_address)
