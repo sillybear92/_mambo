@@ -135,6 +135,10 @@ def main():
 	prevTime=0
 	check=0
 	prevtarget=[]
+	while(len(person)==0):
+		img=cv2.cvtColor(np.array(sct.grab(mon)),cv2.COLOR_RGBA2RGB)
+		result=personTf.return_predict(img)
+		person=draw_rec(img,result)
 	print(person[-1])
 	bbox=int(person[-1][0]),int(person[-1][1]),int(person[-1][2]-person[-1][0]),int(person[-1][3]-person[-1][1])
 	ok=tracker.init(img,bbox)

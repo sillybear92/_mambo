@@ -77,8 +77,8 @@ class VideoCapture(Thread):
 
 def main():
 	host = '0.0.0.0'
-	#port = 5001
-	port = 6666
+	port = 5001
+	#port = 6666
 	capHand = VideoCapture("hand")
 	capPerson = VideoCapture("person")
 	print('setting up on capThread.')
