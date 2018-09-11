@@ -78,7 +78,9 @@ def draw_rectangle(img,result):
 			cv2.rectangle(img,(top_x, top_y),(bottom_x, bottom_y), (0, 255, 0),2)
 			cv2.putText(img, label+' - ' + str(  "{0:.0f}%".format(confidence * 100) ),
 				(bottom_x, top_y-5),  cv2.FONT_HERSHEY_COMPLEX_SMALL,0.8,(0, 255, 0),1)
-		n_detect.append([top_x,top_y,bottom_x,bottom_y])
+			n_detect.append([top_x,top_y,bottom_x,bottom_y])
+		elif label == 'person':
+			n_detect.append([top_x,top_y,bottom_x,bottom_y])
 	return n_detect
 
 # Display FPS
@@ -179,21 +181,36 @@ def shape_detect(client,mask,rec_info,targetOn,tracker):
 
 def get_target(img,result,tracker,obj,targetOn=1):
 	target=[]
+	inbox=[]
+	neartarget=np.array([]).reshape(-1,4)
 	person=draw_rectangle(img,result)
-	neartarget=abs(np.array([[[tx,ty,bx,by]] for [tx,ty,bx,by] in person]).reshape(-1,4)\
-	 - np.array([obj[0],obj[1],obj[2],obj[3]]).reshape(-1,4))
-	maxi=neartarget.max(-1)
-	mini=neartarget.min(-1)
-	if len(neartarget)==0:
+	if len(person)==0:
 		target=[obj]
 	else:
-		minimum=maxi.argmin()
-		target=[person[minimum]]
-		targetOn=setTracker(img,tracker,target,targetOn)
+		for [tx,ty,bx,by] in person:
+			array=np.array([tx,ty,bx,by])
+			neartarget=np.append(neartarget,abs(array-np.array([obj[0],obj[1],obj[2],obj[3]])).reshape(-1,4),axis=0)
+			if tx > obj[0] and ty > obj[1] and bx < obj[2] and by < obj[3] :
+				inbox.append(True)
+			else:
+				inbox.append(False)
+		#neartarget=abs(np.array([[[tx,ty,bx,by]] for [tx,ty,bx,by] in person]).reshape(-1,4)\
+		# - np.array([obj[0],obj[1],obj[2],obj[3]]).reshape(-1,4))
+		maxi=neartarget.max(-1)
+		#mini=neartarget.min(-1)
+		if len(neartarget)==0:
+			target=[obj]
+		else:
+			minimum=maxi.argmin()
+			try:
+				target=[person[inbox.index(True)]]
+			except:
+				target=[person[minimum]]
+			targetOn=setTracker(img,tracker,target,targetOn)
 	return targetOn,target
 
 def setTracker(img,tracker,target,targetOn=1):
-	tx,ty,bx,by=int(target[-1][0]),int(target[-1][1]),int(target[-1][2]),int(target[-1][3])
+	tx,ty,bx,by=int(target[0][0]),int(target[0][1]),int(target[0][2]),int(target[0][3])
 	if not targetOn:
 		bbox=(tx,ty,bx-tx,by-ty)
 		ok=tracker.init(img,bbox)
@@ -253,7 +270,7 @@ def main():
 	rec_info=[]
 	targetOn=0
 	prevtarget=[]
-	tracker=createTrackerByName("KCF")
+	tracker=createTrackerByName("CSRT")
 	while(True):
 		if not targetOn:
 			img,result = client.sendData(b'hdg')

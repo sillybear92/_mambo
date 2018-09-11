@@ -4,6 +4,7 @@ import numpy as np
 import time
 from mss import mss
 import sys
+import drawMov
 
 
 def dp_fps(img,prevTime):
@@ -16,7 +17,7 @@ def dp_fps(img,prevTime):
 	return prevTime
 
 def draw_rec(img,result):
-	n_hand=[]
+	n_detect=[]
 	for obj in result:
 		confidence = obj['confidence']
 		top_x = obj['topleft']['x']
@@ -24,16 +25,14 @@ def draw_rec(img,result):
 		bottom_x = obj['bottomright']['x']
 		bottom_y = obj['bottomright']['y']
 		label = obj['label']
-		#test
-		#cv2.rectangle(img,(top_x, top_y),(bottom_x, bottom_y), (0, 255, 0),2)
-		#cv2.putText(img, label+' - ' + str(  "{0:.0f}%".format(confidence * 100) ),(bottom_x, top_y-5),  cv2.FONT_HERSHEY_COMPLEX_SMALL,0.8,(0, 255, 0),1)
-		# Person Recognition & Boxing
-		#if(confidence>0.1):
-			#cv2.rectangle(img,(top_x, top_y),(bottom_x, bottom_y), (0, 255, 0),2)
-			#cv2.putText(img, label+' - ' + str(  "{0:.0f}%".format(confidence * 100) ),(bottom_x, top_y-5),  cv2.FONT_HERSHEY_COMPLEX_SMALL,0.8,(0, 255, 0),1)
-		if label == 'person':
-			n_hand.append([top_x,top_y,bottom_x,bottom_y])
-	return n_hand
+		if label=='hand':
+			cv2.rectangle(img,(top_x, top_y),(bottom_x, bottom_y), (0, 255, 0),2)
+			cv2.putText(img, label+' - ' + str(  "{0:.0f}%".format(confidence * 100) ),
+				(bottom_x, top_y-5),  cv2.FONT_HERSHEY_COMPLEX_SMALL,0.8,(0, 255, 0),1)
+			n_detect.append([top_x,top_y,bottom_x,bottom_y])
+		elif label == 'person':
+			n_detect.append([top_x,top_y,bottom_x,bottom_y])
+	return n_detect
 
 '''
 Reference:https://www.learnopencv.com/multitracker-multiple-object-tracking-using-opencv-c-python/'''
@@ -67,34 +66,34 @@ def createTrackerByName(trackerType):
 def get_target(img,result,tracker,obj):
 	target=[]
 	targetFlag=0
+	inbox=[]
+	neartarget=np.array([]).reshape(-1,4)
 	if result==-1:
 				return 
 	person=draw_rec(img,result)
-	neartarget=abs(np.array([[[tx,ty,bx,by]] for [tx,ty,bx,by] in person]).reshape(-1,4)\
-	 - np.array([obj[0],obj[1],obj[2],obj[3]]).reshape(-1,4))
-	maxi=neartarget.max(-1)
-	mini=neartarget.min(-1)
-	if len(neartarget)==0:
+	if len(person)==0:
 		target=[obj]
 	else:
-		minimum=maxi.argmin()
-		target=[person[minimum]]
-		setTracker(img,tracker,target)
-	'''if count==1:
-		for [tx,ty,bx,by],goodflag in zip(person,good):
-			if goodflag==False:
+		for [tx,ty,bx,by] in person:
+			neartarget=np.append(neartarget,abs(np.array([tx,ty,bx,by])-np.array([obj[0],obj[1],obj[2],obj[3]])).reshape(-1,4),axis=0)
+			if tx > obj[0] and ty > obj[1] and bx < obj[2] and by < obj[3] :
+				inbox.append(True)
 				continue
-			print(goodflag)
-			target=[[tx,ty,bx,by]]
-			setTracker(img,tracker,target)
-			targetFlag=1
-	else:
-		if len(good)==0:
+			inbox.append(False)
+		#neartarget=abs(np.array([[[tx,ty,bx,by]] for [tx,ty,bx,by] in person]).reshape(-1,4)\
+		# - np.array([obj[0],obj[1],obj[2],obj[3]]).reshape(-1,4))
+		maxi=neartarget.max(-1)
+		#mini=neartarget.min(-1)
+		if len(neartarget)==0:
 			target=[obj]
 		else:
-			minimum=mini.argmin()
-			target=[person[minimum]]
-			setTracker(img,tracker,target)'''
+			print(neartarget)
+			minimum=maxi.argmin()
+			try:
+				target=[person[inbox.index(True)]]
+			except:
+				target=[person[minimum]]
+			setTracker(img,tracker,target)
 	return targetFlag,target
 
 def updateTracker(tracker,img,result,prevtarget):
@@ -105,12 +104,14 @@ def updateTracker(tracker,img,result,prevtarget):
 	print('prevtarget:',prevtarget)
 	if ok:
 		check,target=get_target(img,result,tracker,bbox)
+		cv2.rectangle(img,(bbox[0],bbox[1]),(bbox[2],bbox[3]),(0,255,0),3)
+		cv2.putText(img,"obj",(bbox[2], bbox[1]-5), cv2.FONT_HERSHEY_COMPLEX_SMALL,1,(0,255,0),2)
 	else:
 		check,target=get_target(img,result,tracker,prevtarget[0])
 	return target
 
 def setTracker(img,tracker,target,targetOn=1):
-	tx,ty,bx,by=int(target[-1][0]),int(target[-1][1]),int(target[-1][2]),int(target[-1][3])
+	tx,ty,bx,by=int(target[0][0]),int(target[0][1]),int(target[0][2]),int(target[0][3])
 	#bbox=(tx,ty,bx-tx,by-ty)
 	#ok=tracker.init(img,bbox)
 	cv2.rectangle(img,(tx,ty),(bx,by),(0,255,255),3)
@@ -130,7 +131,7 @@ def main():
 	sct=mss()
 	img=cv2.cvtColor(np.array(sct.grab(mon)),cv2.COLOR_RGBA2RGB)
 	result=personTf.return_predict(img)
-	tracker=createTrackerByName("KCF")
+	tracker=createTrackerByName("CSRT")
 	person=draw_rec(img,result)
 	prevTime=0
 	check=0
@@ -139,18 +140,25 @@ def main():
 		img=cv2.cvtColor(np.array(sct.grab(mon)),cv2.COLOR_RGBA2RGB)
 		result=personTf.return_predict(img)
 		person=draw_rec(img,result)
-	print(person[-1])
-	bbox=int(person[-1][0]),int(person[-1][1]),int(person[-1][2]-person[-1][0]),int(person[-1][3]-person[-1][1])
+	print(person[0])
+	bbox=int(person[0][0]),int(person[0][1]),int(person[0][2]-person[0][0]),int(person[0][3]-person[0][1])
 	ok=tracker.init(img,bbox)
 	check=setTracker(img,tracker,person)
+	prevdraw=[]
+	print(person[0])
+	mov=drawMov.drawMov(person[0])
 	while(True):
 		img=cv2.cvtColor(np.array(sct.grab(mon)),cv2.COLOR_RGBA2RGB)
 		result=personTf.return_predict(img)
 		# Display FPS
 		prevTime=dp_fps(img,prevTime)
 		prevtarget=updateTracker(tracker,img,result,prevtarget)
+		mov.drawCenter(img)
+		mov.drawLine(img,prevtarget[0])
 		cv2.imshow('Image', img)
-		cv2.waitKey(1)
+		if ord('q')==cv2.waitKey(10):
+			exit()
+
 
 
 if __name__=='__main__':
