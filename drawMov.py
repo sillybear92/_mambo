@@ -14,12 +14,14 @@ class drawMov:
 		self.center = self.getCenter(target) 
 
 	def getCenter(self,bbox):
-		center = [(int(bbox[2])-int(bbox[0]))/2,(int(bbox[3])-int(bbox[1]))/2]
+		center = [(int(bbox[2])+int(bbox[0]))/2,(int(bbox[3])+int(bbox[1]))/2]
+		print(bbox)
+		print(center)
 		return center
 
 	def drawLine(self,img,bbox):
 		moveCenter=self.getCenter(bbox)
-		cv2.line(img,self.center,moveCenter,(255,0,0),2)
+		cv2.line(img,(self.center[0],self.center[1]),(moveCenter[0],moveCenter[1]),(255,0,0),2)
 
 	def getAngle(self,bbox):
 		moveCenter=self.getCenter(bbox)
@@ -28,13 +30,8 @@ class drawMov:
 		angle=math.degrees(math.acos(cTheta))
 		return angle
 
+	def drawCenter(self,img):
+		cv2.circle(img,(int(self.center[0]),int(self.center[1])),2,(255,0,0),-1)
 
-cv2.resizeWindow('test',600,480)
-while(True):
-	mask=np.zeros((600,800,3),np.uint8)
-	#(120,280 250,350)
-	cv2.rectangle(mask,(0,0),(250,350),(0,255,0),2)
-	cv2.circle(mask,(int(mask.shape[1]/2),int(mask.shape[0]/2)+100),2,(255,0,0),-1)
-	cv2.imshow('video',mask)
-	print(mask.shape[0]/2,int(mask.shape[1]/2))
-	cv2.waitKey(0)
+
+

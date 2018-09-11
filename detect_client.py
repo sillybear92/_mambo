@@ -18,13 +18,18 @@ import pickle
 class netInfo:
 	def __init__(self):
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-		self.host = sys.argv[1]
-		self.port = int(sys.argv[2])
-		self.server_address = (self.host,self.port)
+		self.host = None
+		self.port = None
+		self.server_address = None
 		self.client_host = '0.0.0.0'
 		self.client_port = 5001
 		self.sock.bind((self.client_host,self.client_port))
 		self.sock.settimeout(0.5)
+
+	def setServer(self,host,port):
+		self.host=host
+		self.port=port
+		self.server_address=(self.host,self.port)
 
 	def sendData(self,message):
 		self.sock.sendto(message,self.server_address)
@@ -240,6 +245,7 @@ def updateTracker(img,result,tracker,prevtarget):
 
 def main():
 	client=netInfo()
+	client.setServer(sys.argv[1],int(sys.argv[2]))
 	print ("server_address is ", client.server_address[0],client.server_address[1])
 	prevTime=0
 	track=[]
