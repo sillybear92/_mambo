@@ -15,8 +15,6 @@ class drawMov:
 
 	def getCenter(self,bbox):
 		center = [(int(bbox[2])+int(bbox[0]))/2,(int(bbox[3])+int(bbox[1]))/2]
-		print(bbox)
-		print(center)
 		return center
 
 	def drawLine(self,img,bbox):
