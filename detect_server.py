@@ -142,6 +142,8 @@ def main():
 			capHand.stop()
 			capPerson.stop()
 
+
+
 	print("Bye..")
 	#capHand.join()
 	capPerson.join()
