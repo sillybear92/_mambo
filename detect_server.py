@@ -141,9 +141,6 @@ def main():
 		elif(data == "quit"):
 			capHand.stop()
 			capPerson.stop()
-
-
-
 	print("Bye..")
 	#capHand.join()
 	capPerson.join()

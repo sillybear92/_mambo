@@ -1,3 +1,4 @@
+#coding=utf8
 from darkflow.net.build import TFNet
 import cv2
 import numpy as np
@@ -105,7 +106,7 @@ def updateTracker(tracker,img,result,prevtarget):
 	if ok:
 		check,target=get_target(img,result,tracker,bbox)
 		cv2.rectangle(img,(bbox[0],bbox[1]),(bbox[2],bbox[3]),(0,255,0),3)
-		cv2.putText(img,"obj",(bbox[2], bbox[1]-5), cv2.FONT_HERSHEY_COMPLEX_SMALL,1,(0,255,0),2)
+		cv2.putText(img,"CSRT",(bbox[2], bbox[1]-5), cv2.FONT_HERSHEY_COMPLEX_SMALL,1,(0,255,0),2)
 	else:
 		check,target=get_target(img,result,tracker,prevtarget[0])
 	return target
@@ -147,6 +148,7 @@ def main():
 	prevdraw=[]
 	print(person[0])
 	mov=drawMov.drawMov(person[0])
+	angleStack=0
 	while(True):
 		img=cv2.cvtColor(np.array(sct.grab(mon)),cv2.COLOR_RGBA2RGB)
 		result=personTf.return_predict(img)
@@ -154,7 +156,8 @@ def main():
 		prevTime=dp_fps(img,prevTime)
 		prevtarget=updateTracker(tracker,img,result,prevtarget)
 		mov.drawCenter(img)
-		mov.drawLine(img,prevtarget[0])
+		mov.drawLine(img)
+		angleStack=mov.adjPos(img,prevtarget[0],angleStack)	
 		cv2.imshow('Image', img)
 		if ord('q')==cv2.waitKey(10):
 			exit()
