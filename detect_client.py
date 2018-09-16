@@ -13,6 +13,7 @@ import sys
 import time
 import imutils
 import pickle
+import drawMov
 
 
 class netInfo:
@@ -144,6 +145,7 @@ def shape_detect(client,mask,rec_info,targetOn,tracker):
 	cnts=cnts[0] if imutils.is_cv2() else cnts[1]
 	target_hand=[]
 	target=[]
+	mov=None
 	for c in cnts:
 		shape="not_detect"
 		m=cv2.moments(c)
@@ -171,12 +173,13 @@ def shape_detect(client,mask,rec_info,targetOn,tracker):
 							if result==-1:
 								return 
 							targetOn,target=get_target(img,result,tracker,target_hand[0],targetOn)
+							mov=drawMov.drawMov(target[0])
 						del rec_info[x][0]
 		else:
 			shape = "not_detect"
 		cv2.drawContours(mask,[c],-1,(0,255,0),2)
 		cv2.putText(mask,shape,(cX,cY),cv2.FONT_HERSHEY_SIMPLEX,0.5,(255,255,255),2)
-	return rec_info,targetOn,target
+	return rec_info,targetOn,target,mov
 
 
 def get_target(img,result,tracker,obj,targetOn=1):
@@ -255,6 +258,8 @@ def updateTracker(img,result,tracker,prevtarget):
 	print('prevtarget:',prevtarget)
 	if ok:
 		check,target=get_target(img,result,tracker,bbox)
+		cv2.rectangle(img,(bbox[0],bbox[1]),(bbox[2],bbox[3]),(0,255,0),3)
+		cv2.putText(img,"Tracker",(bbox[2], bbox[1]-5), cv2.FONT_HERSHEY_COMPLEX_SMALL,1,(0,255,0),2)
 	else:
 		check,target=get_target(img,result,tracker,prevtarget[0])
 	return target
@@ -271,6 +276,7 @@ def main():
 	targetOn=0
 	prevtarget=[]
 	tracker=createTrackerByName("CSRT")
+	mov=None
 	while(True):
 		if not targetOn:
 			img,result = client.sendData(b'hdg')
@@ -284,7 +290,7 @@ def main():
 			track=distance_Box(track,center_Box(hand))
 			cv2.polylines(mask,([np.int32(tr) for tr in track]),False,(255,255,0),3)
 			#detect_shape
-			rec_info,targetOn,prevtarget=shape_detect(client,mask,rec_info,targetOn,tracker)
+			rec_info,targetOn,prevtarget,mov=shape_detect(client,mask,rec_info,targetOn,tracker)
 			img=cv2.add(img,mask)
 		else:
 			img,result = client.sendData(b'psg')
@@ -293,6 +299,9 @@ def main():
 			# Display FPS
 			prevTime=dp_fps(img,prevTime)
 			prevtarget=updateTracker(img,result,tracker,prevtarget)
+			mov.drawCenter(img)
+			mov.drawLine(img)
+			angleStack=mov.adjPos(img,prevtarget[0],angleStack)	
 		cv2.imshow('video',img)
 		if ord('q')==cv2.waitKey(10):
 			exit(0)
