@@ -6,7 +6,20 @@ from pyparrot.Minidrone import Mambo
 from pyparrot.scripts import findMinidrone
 
 class drawMov:
-	def __init__(self,target):
+	def __init__(self):
+		self.tx,self.ty,self.bx,self.by = None,None,None,None
+		self.top=None
+		self.bottom = None
+		self.left = None
+		self.right = None
+		self.width = None
+		self.height = None
+		self.center = None
+		self.mamboAddr,self.mamboName = None,None
+		self.mambo = None
+		self.droneCheck=False
+
+	def setTarget(self,target):
 		self.tx,self.ty,self.bx,self.by = int(target[0]),int(target[1]),int(target[2]),int(target[3])
 		self.top=self.ty
 		self.bottom = self.by
@@ -15,11 +28,30 @@ class drawMov:
 		self.width = self.right - self.left
 		self.height = self.bottom - self.top
 		self.center = self.getCenter(target)
+		
+
+	def droneConnect(self):
 		self.mamboAddr,self.mamboName = findMinidrone.getMamboAddr()
 		self.mambo = Mambo(self.mamboAddr, use_wifi=False)
-		self.mamboCheck=self.mambo.connect(num_retries=3)
+		self.droneCheck=self.mambo.connect(num_retries=3)
+		print("Drone Connect: ",self.droneCheck)
+		self.mambo.smart_sleep(2)
+		self.mambo.ask_for_state_update()
+
+	def droneStart(self):
+		self.mambo.smart_sleep(0.5)
+		self.mambo.safe_takeoff(5)
 
 
+	def droneStop(self):
+		self.mambo.smart_sleep(2)
+		self.mambo.ask_for_state_update()
+		self.mambo.smart_sleep(2)
+		self.mambo.safe_land(5)
+		self.mambo.smart_sleep(2)
+		self.mambo.disconnect()
+		print("Complete to Stop the Drone!")
+	
 	def getCenter(self,bbox):
 		return [int((bbox[2]+bbox[0])/2),int((bbox[3]+bbox[1])/2)]
 
@@ -109,7 +141,7 @@ class drawMov:
 		stack=angleStack
 		pos=[roll,pitch,yaw,vertical]
 		cv2.putText(img, "Following The Target", (5,60), cv2.FONT_HERSHEY_SIMPLEX, 0.75,(0,0,255),2)
-		self.__init__(target)
+		self.setTarget(target)
 		pitch = self.adjustBox(img)
 		roll,vertical,yaw,stack,yawTime=self.adjustCenter(img,stack,yawTime)
 		if not pos==[0,0,0,0]:
