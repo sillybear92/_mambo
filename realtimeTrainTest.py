@@ -5,7 +5,7 @@ import numpy as np
 import time
 from mss import mss
 import sys
-import drawMov
+#import drawMov
 
 
 def dp_fps(img,prevTime):
@@ -137,27 +137,27 @@ def main():
 	prevTime=0
 	check=0
 	prevtarget=[]
-	while(len(person)==0):
-		img=cv2.cvtColor(np.array(sct.grab(mon)),cv2.COLOR_RGBA2RGB)
-		result=personTf.return_predict(img)
-		person=draw_rec(img,result)
-	print(person[0])
-	bbox=int(person[0][0]),int(person[0][1]),int(person[0][2]-person[0][0]),int(person[0][3]-person[0][1])
-	ok=tracker.init(img,bbox)
-	check=setTracker(img,tracker,person)
+	#while(len(person)==0):
+	#	img=cv2.cvtColor(np.array(sct.grab(mon)),cv2.COLOR_RGBA2RGB)
+	#	result=personTf.return_predict(img)
+	#	person=draw_rec(img,result)
+	#print(person[0])
+	#bbox=int(person[0][0]),int(person[0][1]),int(person[0][2]-person[0][0]),int(person[0][3]-person[0][1])
+	#ok=tracker.init(img,bbox)
+	#check=setTracker(img,tracker,person)
 	prevdraw=[]
-	print(person[0])
-	mov=drawMov.drawMov(person[0])
-	angleStack=0
+	#print(person[0])
+	#mov=drawMov.drawMov(person[0])
+	#angleStack=0
 	while(True):
 		img=cv2.cvtColor(np.array(sct.grab(mon)),cv2.COLOR_RGBA2RGB)
 		result=personTf.return_predict(img)
 		# Display FPS
 		prevTime=dp_fps(img,prevTime)
-		prevtarget=updateTracker(tracker,img,result,prevtarget)
-		mov.drawCenter(img)
-		mov.drawLine(img)
-		angleStack=mov.adjPos(img,prevtarget[0],angleStack)	
+		#prevtarget=updateTracker(tracker,img,result,prevtarget)
+		#mov.drawCenter(img)
+		#mov.drawLine(img)
+		#angleStack=mov.adjPos(img,prevtarget[0],angleStack)	
 		cv2.imshow('Image', img)
 		if ord('q')==cv2.waitKey(10):
 			exit()
