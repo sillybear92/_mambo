@@ -174,6 +174,7 @@ def shape_detect(client,mask,rec_info,targetOn,tracker):
 								return 
 							targetOn,target=get_target(img,result,tracker,target_hand[0],targetOn)
 							mov=drawMov.drawMov(target[0])
+							print("connected: %s" % mov.mamboCheck)
 						del rec_info[x][0]
 		else:
 			shape = "not_detect"
@@ -269,14 +270,13 @@ def main():
 	client=netInfo()
 	client.setServer(sys.argv[1],int(sys.argv[2]))
 	print ("server_address is ", client.server_address[0],client.server_address[1])
-	prevTime=0
 	track=[]
 	hand=[]
 	rec_info=[]
-	targetOn=0
 	prevtarget=[]
 	tracker=createTrackerByName("CSRT")
 	mov=None
+	prevTime,targetOn,angleStack,yawTime=0,0,0,0
 	while(True):
 		if not targetOn:
 			img,result = client.sendData(b'hdg')
@@ -301,7 +301,7 @@ def main():
 			prevtarget=updateTracker(img,result,tracker,prevtarget)
 			mov.drawCenter(img)
 			mov.drawLine(img)
-			angleStack=mov.adjPos(img,prevtarget[0],angleStack)	
+			angleStack,yawTime=mov.adjPos(img,prevtarget[0],angleStack,yawTime)	
 		cv2.imshow('video',img)
 		if ord('q')==cv2.waitKey(10):
 			exit(0)

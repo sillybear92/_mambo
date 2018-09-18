@@ -2,6 +2,8 @@
 import cv2
 import numpy as np
 import math
+from pyparrot.Minidrone import Mambo
+from pyparrot.scripts import findMinidrone
 
 class drawMov:
 	def __init__(self,target):
@@ -13,6 +15,10 @@ class drawMov:
 		self.width = self.right - self.left
 		self.height = self.bottom - self.top
 		self.center = self.getCenter(target)
+		self.mamboAddr,self.mamboName = findMinidrone.getMamboAddr()
+		self.mambo = Mambo(self.mamboAddr, use_wifi=False)
+		self.mamboCheck=self.mambo.connect(num_retries=3)
+
 
 	def getCenter(self,bbox):
 		return [int((bbox[2]+bbox[0])/2),int((bbox[3]+bbox[1])/2)]
@@ -27,14 +33,17 @@ class drawMov:
 		distance=math.sqrt((moveCenter[0]-self.center[0])**2+(moveCenter[1]-self.center[1])**2)
 		cTheta=(moveCenter[1]-self.center[1])/(distance+10e-5)
 		angle=math.degrees(math.acos(cTheta))
+
 		return angle
 
 	def drawCenter(self,img):
 		cv2.circle(img,tuple(self.center),2,(255,0,0),-1)
 
-	def adjustCenter(self,img,stack):
+	def adjustCenter(self,img,stack,yawTime):
 		# right + , front +, vertical
-		roll, vertical = 0,0
+		roll, vertical, yaw = 0,0,0
+		angle=0
+		yawCount=yawTime
 		stackLR=stack
 		standardCenter=self.getStandardCenter(img)
 		cv2.circle(img,tuple(standardCenter),2,(0,0,255),-1)
@@ -43,16 +52,33 @@ class drawMov:
 		vertical=self.center[1]-standardCenter[1]
 		print([roll,vertical])
 		if roll < -1 :
-			roll = -1
+			roll = -50
 			stackLR -= 1
 		elif roll > 1 :
-			roll = 1
+			roll = 50
 			stackLR += 1
 		if vertical < -1:
-			vertical = 1
+			vertical = 50
 		elif vertical > 1 :
-			vertical=-1
-		return roll,vertical,stackLR
+			vertical=-50
+		if yawCount <-1:
+			yaw=-50
+			yawCount += 1
+		elif yawCount >1 :
+			yaw = 50
+			yawCount -= 1
+		if stackLR > 20 :
+			angle = self.getAngle(img)
+			stackLR = 0
+			print('angle: ', angle)
+			yawCount=int(angle/7)
+		elif stackLR < -20:
+			angle = -(self.getAngle(img))
+			stackLR = 0
+			print('angle: ', angle)
+			yawCount=int(angle/7)
+
+		return roll,vertical,yaw,stackLR,yawCount
 
 	def getStandardCenter(self,img):
 		return [int(img.shape[1]/2),int(img.shape[0]/2+100)]
@@ -77,44 +103,19 @@ class drawMov:
 		return pitch
 
 
-	def adjPos(self,img,target,angleStack):
-		roll,pitch,yaw,vertical=0,0,0,0
+	def adjPos(self,img,target,angleStack,yawTime):
+		roll,pitch,yaw,vertical,duration=0,0,0,0,0.5
 		angle=0
 		stack=angleStack
 		pos=[roll,pitch,yaw,vertical]
 		cv2.putText(img, "Following The Target", (5,60), cv2.FONT_HERSHEY_SIMPLEX, 0.75,(0,0,255),2)
-		message=[]
 		self.__init__(target)
 		pitch = self.adjustBox(img)
-		roll,vertical,stack=self.adjustCenter(img,stack)
-		
-		if roll < 0:
-			message.append('left')
-		elif roll > 0 :
-			message.append('right')
+		roll,vertical,yaw,stack,yawTime=self.adjustCenter(img,stack,yawTime)
+		if not pos==[0,0,0,0]:
+			self.mambo.fly_direct(roll=roll, pitch=pitch, yaw=yaw, vertical_movement=vertical, duration=duration)
 
-		if vertical < 0 :
-			message.append('down')
-		elif vertical > 0 :
-			message.append('up')
-
-		if pitch > 0 :
-			message.append('front')
-		elif pitch < 0:
-			message.append('back')
-
-		if stack > 10 :
-			angle = self.getAngle(img)
-			stack = 0
-			print('angle: ', angle)
-		elif stack < -10:
-			angle = -(self.getAngle(img))
-			stack = 0
-			print('angle: ', angle)
-
-		print(message)
-
-		return stack
+		return stack,yawTime
 
 
 
