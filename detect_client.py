@@ -4,6 +4,8 @@
 	-> https://www.pyimagesearch.com/2016/02/08/opencv-shape-detection/
 	create tracker : Multiple Object Tracking using OpenCV 
 	-> https://www.learnopencv.com/multitracker-multiple-object-tracking-using-opencv-c-python/
+	Drone Mambo Control
+	-> pyparrot: https://github.com/amymcgovern/pyparrot
 '''
 
 import socket

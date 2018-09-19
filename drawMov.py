@@ -1,4 +1,8 @@
 #coding=utf8
+'''
+	Drone Mambo Control
+	-> pyparrot: https://github.com/amymcgovern/pyparrot
+'''
 import cv2
 import numpy as np
 import math
@@ -44,11 +48,11 @@ class drawMov:
 
 
 	def droneStop(self):
-		self.mambo.smart_sleep(2)
+		self.mambo.smart_sleep(1)
 		self.mambo.ask_for_state_update()
-		self.mambo.smart_sleep(2)
+		self.mambo.smart_sleep(1)
 		self.mambo.safe_land(5)
-		self.mambo.smart_sleep(2)
+		self.mambo.smart_sleep(1)
 		self.mambo.disconnect()
 		print("Complete to Stop the Drone!")
 	
@@ -135,10 +139,11 @@ class drawMov:
 		return pitch
 
 
-	def adjPos(self,img,target,angleStack,yawTime):
+	def adjPos(self,img,target,angleStack,yawCount):
 		roll,pitch,yaw,vertical,duration=0,0,0,0,0.5
 		angle=0
 		stack=angleStack
+		yawTime=yawCount
 		pos=[roll,pitch,yaw,vertical]
 		cv2.putText(img, "Following The Target", (5,60), cv2.FONT_HERSHEY_SIMPLEX, 0.75,(0,0,255),2)
 		self.setTarget(target)
