@@ -49,8 +49,6 @@ class drawMov:
 
 	def droneStop(self):
 		self.mambo.smart_sleep(1)
-		self.mambo.ask_for_state_update()
-		self.mambo.smart_sleep(1)
 		self.mambo.safe_land(5)
 		self.mambo.smart_sleep(1)
 		self.mambo.disconnect()
