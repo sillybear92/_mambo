@@ -306,9 +306,12 @@ def main():
 			mov.drawLine(img)
 			angleStack,yawTime=mov.adjPos(img,prevtarget[0],angleStack,yawTime)	
 		cv2.imshow('video',img)
+		if ord('p')==cv2.waitKey(10):
+			mov.droneStart()
 		if ord('q')==cv2.waitKey(10):
 			mov.droneStop()
 			exit(0)
+		mov.update()
 	print('== Turn over ==')
 
 if __name__=='__main__':

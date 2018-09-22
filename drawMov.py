@@ -19,6 +19,11 @@ class drawMov:
 		self.mambo = None
 		self.droneCheck=False
 
+	def update(self):
+		self.mambo.smart_sleep(0.01)
+		print("Battery:",self.mambo.sensors.battery,"%   State:",self.mambo.sensors.flying_state)
+
+
 	def setTarget(self,target):
 		self.tx,self.ty,self.bx,self.by = int(target[0]),int(target[1]),int(target[2]),int(target[3])
 		self.top=self.ty
@@ -29,7 +34,6 @@ class drawMov:
 		self.height = self.bottom - self.top
 		self.center = self.getCenter(target)
 		
-
 	def droneConnect(self):
 		self.mamboAddr,self.mamboName = findMinidrone.getMamboAddr()
 		self.mambo = Mambo(self.mamboAddr, use_wifi=False)
@@ -39,16 +43,12 @@ class drawMov:
 		self.mambo.ask_for_state_update()
 
 	def droneStart(self):
-		self.mambo.smart_sleep(0.5)
 		self.mambo.safe_takeoff(5)
 
 
 	def droneStop(self):
-		self.mambo.smart_sleep(2)
-		self.mambo.ask_for_state_update()
-		self.mambo.smart_sleep(2)
-		self.mambo.safe_land(5)
-		self.mambo.smart_sleep(2)
+		if not self.mambo.sensors.flying_state == 'landed':
+			self.mambo.safe_land(5)
 		self.mambo.disconnect()
 		print("Complete to Stop the Drone!")
 	
@@ -61,7 +61,7 @@ class drawMov:
 		cv2.line(img,(self.center[0],self.center[1]),(moveCenter[0],moveCenter[1]),(255,0,0),2)
 
 	def getAngle(self,img):
-		moveCenter=self.getStandardCenter(img)
+		moveCenter=self.getStandardCenter(imbatteryg)
 		distance=math.sqrt((moveCenter[0]-self.center[0])**2+(moveCenter[1]-self.center[1])**2)
 		cTheta=(moveCenter[1]-self.center[1])/(distance+10e-5)
 		angle=math.degrees(math.acos(cTheta))
@@ -144,7 +144,9 @@ class drawMov:
 		self.setTarget(target)
 		pitch = self.adjustBox(img)
 		roll,vertical,yaw,stack,yawTime=self.adjustCenter(img,stack,yawTime)
-		if not pos==[0,0,0,0]:
+		if pos==[0,0,0,0]:
+			stack=0
+		else:
 			self.mambo.fly_direct(roll=roll, pitch=pitch, yaw=yaw, vertical_movement=vertical, duration=duration)
 
 		return stack,yawTime
