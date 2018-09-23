@@ -50,7 +50,10 @@ class drawMov:
 	def droneStop(self):
 		if not self.mambo.sensors.flying_state == 'landed':
 			self.mambo.safe_land(5)
-		self.mambo.disconnect()
+		try:
+			self.mambo.disconnect()
+		except:
+			print("No Ground Cam!!")
 		print("Complete to Stop the Drone!")
 	
 	def getCenter(self,bbox):

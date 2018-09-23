@@ -26,5 +26,13 @@ def main():
 			mov.mambo.fly_direct(roll=-100,pitch=0,yaw=0,vertical_movement=0,duration=0.1)
 		elif ord('d')==key:
 			mov.mambo.fly_direct(roll=100,pitch=0,yaw=0,vertical_movement=0,duration=0.1)
+		elif ord('i')==key:
+			mov.mambo.fly_direct(roll=0,pitch=0,yaw=0,vertical_movement=50,duration=0.1)
+		elif ord('k')==key:
+			mov.mambo.fly_direct(roll=0,pitch=0,yaw=0,vertical_movement=-50,duration=0.1)
+		elif ord('j')==key:
+			mov.mambo.fly_direct(roll=0,pitch=0,yaw=-50,vertical_movement=-50,duration=0.1)
+		elif ord('l')==key:
+			mov.mambo.fly_direct(roll=0,pitch=0,yaw=50,vertical_movement=-50,duration=0.1)
 if __name__=='__main__':
 	main()
