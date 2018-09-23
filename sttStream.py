@@ -113,6 +113,7 @@ def listen_print_loop(responses):
     final one, print a newline to preserve the finalized transcription.
     """
     num_chars_printed = 0
+    stopFlag=False
     for response in responses:
         if not response.results:
             continue
@@ -145,6 +146,8 @@ def listen_print_loop(responses):
             print(transcript + overwrite_chars)
             if (u'그만') in transcript:
                 print(u'요기있다')
+                stopFlag=True
+                return stopFlag
             # Exit recognition if any of the transcribed phrases could be
             # one of our keywords.
             if re.search(r'\b(exit|quit)\b', transcript, re.I):
@@ -152,9 +155,11 @@ def listen_print_loop(responses):
                 break
 
             num_chars_printed = 0
+    return stopFlag
 
 
 def main(sample_rate):
+    stopFlag=False
     # See http://g.co/cloud/speech/docs/languages
     # for a list of supported languages.
     language_code = 'ko-KR'  # a BCP-47 language tag
@@ -177,7 +182,7 @@ def main(sample_rate):
         responses = client.streaming_recognize(streaming_config, requests)
 
         # Now, put the transcription responses to use.
-        listen_print_loop(responses)
+        stopFlag=listen_print_loop(responses)
 
 
 if __name__ == '__main__':

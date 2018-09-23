@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#	https://github.com/GoogleCloudPlatform/python-docs-samples/tree/speech-continuous/speech/cloud-client
 
 """Google Cloud Speech API sample application using the streaming API.
 NOTE: This module requires the additional dependency `pyaudio`. To install
@@ -35,7 +36,7 @@ from google.api_core import exceptions
 import six
 from google.oauth2 import service_account
 
-import transcribe_streaming_mic
+import sttStream
 # [END import_libraries]
 
 
@@ -43,7 +44,7 @@ def duration_to_secs(duration):
     return duration.seconds + (duration.nanos / float(1e9))
 
 
-class ResumableMicrophoneStream(transcribe_streaming_mic.MicrophoneStream):
+class ResumableMicrophoneStream(sttStream.MicrophoneStream):
     """Opens a recording stream as a generator yielding the audio chunks."""
     def __init__(self, rate, chunk_size, max_replay_secs=5):
         super(ResumableMicrophoneStream, self).__init__(rate, chunk_size)
@@ -158,11 +159,20 @@ def listen_print_loop(responses, stream):
     """
     with_results = (r for r in responses if (
             r.results and r.results[0].alternatives))
-    transcribe_streaming_mic.listen_print_loop(
+    return sttStream.listen_print_loop(
             _record_keeper(with_results, stream))
 
 
-def main(sample_rate, audio_src):
+def run():
+    stopFlag=False
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument('--rate', default=16000, help='Sample rate.', type=int)
+    parser.add_argument('--audio_src', help='File to simulate streaming of.')
+    args = parser.parse_args()
+    sample_rate=args.rate
+    audio_src=args.audio_src
     # See http://g.co/cloud/speech/docs/languages
     # for a list of supported languages.
     language_code = 'ko-KR'  # a BCP-47 language tag
@@ -188,7 +198,7 @@ def main(sample_rate, audio_src):
 
     with mic_manager as stream:
         resume = False
-        while True:
+        while not stopFlag:
             audio_generator = stream.generator(resume=resume)
             requests = (types.StreamingRecognizeRequest(audio_content=content)
                         for content in audio_generator)
@@ -197,7 +207,7 @@ def main(sample_rate, audio_src):
 
             try:
                 # Now, put the transcription responses to use.
-                listen_print_loop(responses, stream)
+                stopFlag=listen_print_loop(responses, stream)
                 break
             except (exceptions.OutOfRange, exceptions.InvalidArgument) as e:
                 if not ('maximum allowed stream duration' in e.message or
@@ -205,13 +215,7 @@ def main(sample_rate, audio_src):
                     raise
                 print('Resuming..')
                 resume = True
-
+    return stopFlag
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-        description=__doc__,
-        formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('--rate', default=16000, help='Sample rate.', type=int)
-    parser.add_argument('--audio_src', help='File to simulate streaming of.')
-    args = parser.parse_args()
-    main(args.rate, args.audio_src)
+    run()

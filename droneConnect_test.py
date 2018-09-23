@@ -23,9 +23,9 @@ def main():
 		elif ord('s')==key:
 			mov.mambo.fly_direct(roll=0,pitch=-100,yaw=0,vertical_movement=0,duration=0.1)
 		elif ord('a')==key:
-			mov.mambo.fly_direct(roll=-100,pitch=0,yaw=0,vertical_movement=0,duration=0.1)
+			mov.mambo.fly_direct(roll=-50,pitch=0,yaw=0,vertical_movement=0,duration=0.1)
 		elif ord('d')==key:
-			mov.mambo.fly_direct(roll=100,pitch=0,yaw=0,vertical_movement=0,duration=0.1)
+			mov.mambo.fly_direct(roll=50,pitch=0,yaw=0,vertical_movement=0,duration=0.1)
 		elif ord('i')==key:
 			mov.mambo.fly_direct(roll=0,pitch=0,yaw=0,vertical_movement=50,duration=0.1)
 		elif ord('k')==key:
