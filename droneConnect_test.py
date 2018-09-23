@@ -16,5 +16,15 @@ def main():
 		if ord('q')==key:
 			mov.droneStop()
 			exit(0)
+		elif ord('p')==key:
+			mov.droneStart()
+		elif ord('w')==key:
+			mov.mambo.fly_direct(roll=0,pitch=100,yaw=0,vertical_movement=0,duration=0.1)
+		elif ord('s')==key:
+			mov.mambo.fly_direct(roll=0,pitch=-100,yaw=0,vertical_movement=0,duration=0.1)
+		elif ord('a')==key:
+			mov.mambo.fly_direct(roll=-100,pitch=0,yaw=0,vertical_movement=0,duration=0.1)
+		elif ord('d')==key:
+			mov.mambo.fly_direct(roll=100,pitch=0,yaw=0,vertical_movement=0,duration=0.1)
 if __name__=='__main__':
 	main()

@@ -41,6 +41,7 @@ class drawMov:
 		print("Drone Connect: ",self.droneCheck)
 		self.mambo.smart_sleep(2)
 		self.mambo.ask_for_state_update()
+		self.mambo.set_max_tilt(1)
 
 	def droneStart(self):
 		self.mambo.safe_takeoff(5)
