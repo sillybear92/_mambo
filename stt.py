@@ -215,7 +215,8 @@ def run():
                     raise
                 print('Resuming..')
                 resume = True
-    return stopFlag
+    if not stopFlag:
+        print(u'에러!! 인터넷문제 에러 혹은 비정상종료입니다.')
 
 if __name__ == '__main__':
     run()

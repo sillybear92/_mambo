@@ -1,10 +1,11 @@
 import stt
 from multiprocessing import Process
-from multiprocessing import Pool
 
-proc=[]
-p=Pool(processes=1)
-speechList=['mambo']
-stopFlag=p.map(stt.run,iterable=speechList)
+p=Process(target=stt.run)
+p.start()
 while True:
-	print(stopFlag)
+	if (p.is_alive()):
+		continue
+	print(u'STT와 연결 끊김')
+		
+

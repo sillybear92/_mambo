@@ -144,8 +144,8 @@ def listen_print_loop(responses):
 
         else:
             print(transcript + overwrite_chars)
-            if (u'그만') in transcript:
-                print(u'요기있다')
+            if (u'그만 착륙해') in transcript:
+                print(u'정지')
                 stopFlag=True
                 return stopFlag
             # Exit recognition if any of the transcribed phrases could be
