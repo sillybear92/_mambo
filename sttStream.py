@@ -144,7 +144,7 @@ def listen_print_loop(responses):
 
         else:
             print(transcript + overwrite_chars)
-            if (u'그만 착륙해') in transcript:
+            if ((u'만보 그만') in transcript) or ((u'맘보 그만') in transcript):
                 print(u'정지')
                 stopFlag=True
                 return stopFlag

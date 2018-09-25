@@ -176,8 +176,11 @@ def run():
     # See http://g.co/cloud/speech/docs/languages
     # for a list of supported languages.
     language_code = 'ko-KR'  # a BCP-47 language tag
-    credentials = service_account.Credentials.from_service_account_file(
-    '/home/lee/project/mambo/deepmambo-1537361905834-14c65ef38075.json')
+#Desktop
+    credentials = service_account.Credentials.from_service_account_file('F:\\AnacondaProjects\\DeepMambo-4be2db5bdbac.json')
+#Notebook
+    #credentials = service_account.Credentials.from_service_account_file(
+    #'/home/lee/project/mambo/deepmambo-1537361905834-14c65ef38075.json')
     client = speech.SpeechClient(credentials=credentials)
     config = types.RecognitionConfig(
         encoding=enums.RecognitionConfig.AudioEncoding.LINEAR16,

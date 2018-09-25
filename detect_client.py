@@ -14,6 +14,8 @@ import time
 import imutils
 import pickle
 import drawMov
+import stt
+from multiprocessing import Process
 
 
 class netInfo:
@@ -280,7 +282,13 @@ def main():
 	while not mov.droneCheck:
 		mov.droneConnect()
 	prevTime,targetOn,angleStack,yawTime=0,0,0,0
+	# Speech recognize
+	sttp=p=Process(target=stt.run)
+	sttp.start()
 	while(True):
+		if not sttp.is_alive():
+			mov.droneStop()
+			exit(0)
 		if not targetOn:
 			img,result = client.sendData(b'hdg')
 			if result==-1:
