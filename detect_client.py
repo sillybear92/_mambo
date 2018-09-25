@@ -287,6 +287,7 @@ def main():
 	sttp.start()
 	print('Start STT PROCESS--')
 	while(True):
+		print(sttp.is_alive())
 		if not (sttp.is_alive()):
 			mov.droneStop()
 			exit(0)
@@ -315,12 +316,15 @@ def main():
 			mov.drawLine(img)
 			angleStack,yawTime=mov.adjPos(img,prevtarget[0],angleStack,yawTime)	
 		cv2.imshow('video',img)
-		if ord('p')==cv2.waitKey(10):
+		print(sttp.is_alive())
+		key=cv2.waitKey(10)
+		if ord('p')==key:
 			mov.droneStart()
-		if ord('q')==cv2.waitKey(10):
+		if ord('q')==key:
 			mov.droneStop()
 			exit(0)
 		mov.update()
+		print(sttp.is_alive())
 	print('== Turn over ==')
 
 if __name__=='__main__':
