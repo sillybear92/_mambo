@@ -283,10 +283,11 @@ def main():
 		mov.droneConnect()
 	prevTime,targetOn,angleStack,yawTime=0,0,0,0
 	# Speech recognize
-	sttp=p=Process(target=stt.run)
+	sttp=Process(target=stt.run)
 	sttp.start()
+	print('Start STT PROCESS--')
 	while(True):
-		if not sttp.is_alive():
+		if not (sttp.is_alive()):
 			mov.droneStop()
 			exit(0)
 		if not targetOn:

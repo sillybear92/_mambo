@@ -133,9 +133,9 @@ class drawMov:
 		pitch = 0
 		inBox,outBox=self.getStandardBox(img)
 		if self.width<inBox[0] and self.height<inBox[1]:
-			pitch = 1
+			pitch = 100
 		elif self.width>outBox[0] and self.height>outBox[1]:
-			pitch = -1
+			pitch = -100
 		return pitch
 
 
