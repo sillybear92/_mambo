@@ -143,11 +143,12 @@ class drawMov:
 		roll,pitch,yaw,vertical,duration=0,0,0,0,0.1
 		angle=0
 		stack=angleStack
-		pos=[roll,pitch,yaw,vertical]
+		
 		cv2.putText(img, "Following The Target", (5,60), cv2.FONT_HERSHEY_SIMPLEX, 0.75,(0,0,255),2)
 		self.setTarget(target)
 		pitch = self.adjustBox(img)
 		roll,vertical,yaw,stack,yawTime=self.adjustCenter(img,stack,yawTime)
+		pos=[roll,pitch,yaw,vertical]
 		if pos==[0,0,0,0]:
 			stack=0
 		else:
