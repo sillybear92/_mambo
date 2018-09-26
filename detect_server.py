@@ -65,7 +65,10 @@ class VideoCapture(Thread):
 		optionPerson={"pbLoad":hp+"\\darkflow-master\\built_graph\\yolo180905.pb",
 		 "metaLoad":hp+ "\\darkflow-master\\built_graph\\yolo180905.meta",
 		 "threshold":0.4, "gpu":0.7}
-		tfOptions = {"hand" : optionHand, "person" : optionPerson}
+		optionDetect={"pbLoad":hp+"\\darkflow-master\\built_graph\\detect180909.pb",
+		 "metaLoad":hp+ "\\darkflow-master\\built_graph\\detect180909.meta",
+		 "threshold":0.4, "gpu":0.7}
+		tfOptions = {"hand" : optionHand, "person" : optionPerson, "detect": optionDetect}
 		return tfOptions[option]
 
 	def preconnect(self):
@@ -77,13 +80,15 @@ class VideoCapture(Thread):
 
 def main():
 	host = '0.0.0.0'
-	#port = 5001
-	port = 6666
+	port = 5001
+	#port = 6666
 	capHand = VideoCapture("hand")
 	capPerson = VideoCapture("person")
+	capDetect = VideoCapture("detect")
 	print('setting up on capThread.')
 	capHand.start()
 	capPerson.start()
+	capDetect.start()
 	print('starting up on capThread.')
 	#starting up on capThread.
 	sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -123,6 +128,21 @@ def main():
 			
 			sock.sendto(buffer, address)
 
+		elif(data == b'dtg'):
+			img,result = capDetect.getBuffer()
+			dopick = {'image' : img.tobytes(), 'result' : result}
+			buffer = pickle.dumps(dopick,protocol=2)
+			if buffer is None:
+				continue
+			
+			if len(buffer) > 65507:
+				print(len(buffer))
+				print("The message is too large to be sent within a single UDP datagram. We do not handle splitting the message in multiple datagrams")
+				sock.sendto(b'FAIL',address)
+				continue
+			
+			sock.sendto(buffer, address)
+
 		elif(data == b'get'):
 			img = capPerson.getImage()
 			dopick = {'image' : img.tobytes()}
@@ -141,6 +161,7 @@ def main():
 		elif(data == "quit"):
 			capHand.stop()
 			capPerson.stop()
+
 	print("Bye..")
 	#capHand.join()
 	capPerson.join()
