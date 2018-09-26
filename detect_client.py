@@ -201,8 +201,6 @@ def get_target(img,result,tracker,obj,targetOn=1):
 				inbox.append(True)
 			else:
 				inbox.append(False)
-		#neartarget=abs(np.array([[[tx,ty,bx,by]] for [tx,ty,bx,by] in person]).reshape(-1,4)\
-		# - np.array([obj[0],obj[1],obj[2],obj[3]]).reshape(-1,4))
 		maxi=neartarget.max(-1)
 		#mini=neartarget.min(-1)
 		if len(neartarget)==0:
@@ -271,7 +269,8 @@ def updateTracker(img,result,tracker,prevtarget):
 
 def main():
 	client=netInfo()
-	client.setServer(sys.argv[1],int(sys.argv[2]))
+	client.setServer('192.168.0.14',6666)
+	#client.setServer(sys.argv[1],int(sys.argv[2]))
 	print ("server_address is ", client.server_address[0],client.server_address[1])
 	track=[]
 	hand=[]
@@ -281,16 +280,16 @@ def main():
 	mov=drawMov.drawMov()
 	while not mov.droneCheck:
 		mov.droneConnect()
-	prevTime,targetOn,angleStack,yawTime=0,0,0,0
 	# Speech recognize
 	sttp=Process(target=stt.run)
 	sttp.start()
 	print('Start STT PROCESS--')
+	prevTime,targetOn,angleStack,yawTime=0,0,0,0
 	while(True):
-		print(sttp.is_alive())
 		if not (sttp.is_alive()):
 			mov.droneStop()
 			exit(0)
+			print('DISCONNECT !!!!!!!!!!!!')
 		if not targetOn:
 			img,result = client.sendData(b'hdg')
 			if result==-1:
@@ -316,7 +315,6 @@ def main():
 			mov.drawLine(img)
 			angleStack,yawTime=mov.adjPos(img,prevtarget[0],angleStack,yawTime)	
 		cv2.imshow('video',img)
-		print(sttp.is_alive())
 		key=cv2.waitKey(10)
 		if ord('p')==key:
 			mov.droneStart()
@@ -324,7 +322,6 @@ def main():
 			mov.droneStop()
 			exit(0)
 		mov.update()
-		print(sttp.is_alive())
 	print('== Turn over ==')
 
 if __name__=='__main__':

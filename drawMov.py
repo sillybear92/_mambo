@@ -140,7 +140,7 @@ class drawMov:
 
 
 	def adjPos(self,img,target,angleStack,yawTime):
-		roll,pitch,yaw,vertical,duration=0,0,0,0,0.5
+		roll,pitch,yaw,vertical,duration=0,0,0,0,0.1
 		angle=0
 		stack=angleStack
 		pos=[roll,pitch,yaw,vertical]
@@ -152,6 +152,7 @@ class drawMov:
 			stack=0
 		else:
 			self.mambo.fly_direct(roll=roll, pitch=pitch, yaw=yaw, vertical_movement=vertical, duration=duration)
+			print('Roll:',roll,' Pitch:',pitch,' Yaw:',yaw,' Vertical:',vertical)
 
 		return stack,yawTime
 
