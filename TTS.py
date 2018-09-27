@@ -13,10 +13,11 @@ from scipy.spatial import distance
 from multiprocessing import Process
 import pygame
 
+
 class TTS():
 	def __init__(self):
-		self.client_id = "z6r28zt96q" 
-		self.client_secret = "5JpTYO1zpUKCzGipoESGb1ixja3JWy5DR7Zqghlp"
+		self.client_id = None
+		self.client_secret = None
 		self.speaker = "mijin" 
 		self.speed = "0" 
 		self.val = {
@@ -30,6 +31,14 @@ class TTS():
 		self.p=None
 		self.call_battery_10=False
 		self.call_battery_5=False
+
+	def setID(self,id,secret):
+		self.client_id=id
+		self.client_secret=secret
+		self.headers = {
+    	    		"X-NCP-APIGW-API-KEY-ID" : self.client_id,
+    	    		"X-NCP-APIGW-API-KEY" : self.client_secret
+		}
 
 	def run(self,f):
 		if self.p == None:	

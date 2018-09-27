@@ -18,6 +18,7 @@ import stt
 from multiprocessing import Process
 from netInfo import netInfo
 from TTS import TTS
+from TTS_SECRET import TTS_SECRET
 
 
 # Draw_rec and person motion recognition save
@@ -245,6 +246,8 @@ def main():
 	prevTime,targetOn,angleStack,yawTime=0,0,0,0
 	pygame.mixer.init(16000, -16, 1, 2048)
 	tts=TTS()
+	ttsID=TTS_SECRET()
+	tts.setID(ttsID.id,ttsID.secret)
 	while(True):
 		if (speech.is_alive()==False) or (mov.droneBattery < 2):
 			mov.droneStop()
