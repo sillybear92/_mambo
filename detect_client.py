@@ -16,57 +16,14 @@ import pickle
 import drawMov
 import stt
 from multiprocessing import Process
-
-
-class netInfo:
-	def __init__(self):
-		self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-		self.host = None
-		self.port = None
-		self.server_address = None
-		self.client_host = '0.0.0.0'
-		self.client_port = 5001
-		self.sock.bind((self.client_host,self.client_port))
-		self.sock.settimeout(0.5)
-
-	def setServer(self,host,port):
-		self.host=host
-		self.port=port
-		self.server_address=(self.host,self.port)
-
-	def sendData(self,message):
-		self.sock.sendto(message,self.server_address)
-		try:
-			data,server = self.sock.recvfrom(65507)
-		except socket.timeout as err:
-			print("Timeout !! again !! ")
-			return -1,-1
-		print("Fragment size: {}".format(len(data)))
-		if len(data) == 4:
-			while(len(data)==4):
-				self.sock.sendto(message,self.server_address)
-				try:
-					data,server = self.sock.recvfrom(65507)
-				except socket.timeout as err:
-					print("Timeout !! again !! ")
-					return -1,-1
-				print("Fragment size: {}".format(len(data)))
-		unpick = pickle.loads(data)
-		i = unpick["image"]
-		array = np.frombuffer(i, dtype=np.dtype('uint8'))
-		img = cv2.imdecode(array,1)
-		try:
-			result = unpick["result"]	
-		except:
-			result = None
-		return img, result
-
+from netInfo import netInfo
+from TTS import TTS
 
 
 # Draw_rec and person motion recognition save
 def draw_rectangle(img,result):
 	n_detect=[]
-	labels=['hand','person']
+	labels=['hand','person', 'car', 'bicycle', 'bollard', 'deskchair', 'traffic' ]
 	for obj in result:
 		label = obj['label']
 		if not label in [l for l in labels]:
@@ -84,6 +41,10 @@ def draw_rectangle(img,result):
 			n_detect.append([top_x,top_y,bottom_x,bottom_y])
 		elif label == 'person':
 			n_detect.append([top_x,top_y,bottom_x,bottom_y])
+		else:
+			cv2.rectangle(img,(top_x, top_y),(bottom_x, bottom_y), (0, 255, 0),2)
+			cv2.putText(img, label+' - ' + str(  "{0:.0f}%".format(confidence * 100) ),
+				(bottom_x, top_y-5),  cv2.FONT_HERSHEY_COMPLEX_SMALL,0.8,(0, 255, 0),1)
 	return n_detect
 
 # Display FPS
@@ -272,21 +233,20 @@ def main():
 	client.setServer('192.168.0.14',6666)
 	#client.setServer(sys.argv[1],int(sys.argv[2]))
 	print ("server_address is ", client.server_address[0],client.server_address[1])
-	track=[]
-	hand=[]
-	rec_info=[]
-	prevtarget=[]
+	track,hand,rec_info,prevtarget,detect=[],[],[],[],[]
 	tracker=createTrackerByName("CSRT")
 	mov=drawMov.drawMov()
 	while not mov.droneCheck:
 		mov.droneConnect()
 	# Speech recognize
-	sttp=Process(target=stt.run)
-	sttp.start()
+	speech=Process(target=stt.run)
+	speech.start()
 	print('Start STT PROCESS--')
 	prevTime,targetOn,angleStack,yawTime=0,0,0,0
+	pygame.mixer.init(16000, -16, 1, 2048)
+	tts=TTS()
 	while(True):
-		if not (sttp.is_alive()):
+		if (speech.is_alive()==False) or (mov.droneBattery < 2):
 			mov.droneStop()
 			exit(0)
 			print('DISCONNECT !!!!!!!!!!!!')
@@ -306,14 +266,18 @@ def main():
 			img=cv2.add(img,mask)
 		else:
 			img,result = client.sendData(b'psg')
-			if result==-1:
+			img,detect_result = client.sendData(b'dtg')
+			if result==-1 or detect_result == -1:
 				continue
 			# Display FPS
 			prevTime=dp_fps(img,prevTime)
 			prevtarget=updateTracker(img,result,tracker,prevtarget)
 			mov.drawCenter(img)
 			mov.drawLine(img)
-			angleStack,yawTime=mov.adjPos(img,prevtarget[0],angleStack,yawTime)	
+			angleStack,yawTime=mov.adjPos(img,prevtarget[0],angleStack,yawTime)
+			detect=draw_rectangle(img,detect_result)
+			tts.mostRisk(detect_result,prevtarget,img,mov.droneBattery)
+
 		cv2.imshow('video',img)
 		key=cv2.waitKey(10)
 		if ord('p')==key:

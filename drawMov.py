@@ -18,10 +18,12 @@ class drawMov:
 		self.mamboAddr,self.mamboName = None,None
 		self.mambo = None
 		self.droneCheck=False
+		self.droneBattery=None
 
 	def update(self):
 		self.mambo.smart_sleep(0.01)
-		print("Battery:",self.mambo.sensors.battery,"%   State:",self.mambo.sensors.flying_state)
+		self.droneBattery=int(self.mambo.sensors.battery)
+		print("Battery:",self.droneBattery,"%   State:",self.mambo.sensors.flying_state)
 
 
 	def setTarget(self,target):
@@ -143,7 +145,6 @@ class drawMov:
 		roll,pitch,yaw,vertical,duration=0,0,0,0,0.1
 		angle=0
 		stack=angleStack
-		
 		cv2.putText(img, "Following The Target", (5,60), cv2.FONT_HERSHEY_SIMPLEX, 0.75,(0,0,255),2)
 		self.setTarget(target)
 		pitch = self.adjustBox(img)
