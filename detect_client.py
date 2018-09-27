@@ -246,8 +246,7 @@ def main():
 	prevTime,targetOn,angleStack,yawTime=0,0,0,0
 	pygame.mixer.init(16000, -16, 1, 2048)
 	tts=TTS()
-	ttsID=TTS_SECRET()
-	tts.setID(ttsID.id,ttsID.secret)
+	tts.setID(TTS_SECRET.id,TTS_SECRET.secret)
 	while(True):
 		if (speech.is_alive()==False) or (mov.droneBattery < 2):
 			mov.droneStop()
