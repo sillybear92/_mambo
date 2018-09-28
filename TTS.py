@@ -75,11 +75,11 @@ class TTS():
 		battery=batteryGauge
 		if self.p == None:
 			if (battery < 10) and (self.call_battery_10==False):
-				self.val["text"]='드론의배터리가 얼마남지않았습니다.'
+				self.val["text"]='드론의 배터리가 얼마남지 않았습니다.'
 				self.play_audio()
 				self.call_battery_10=True
 			elif (battery < 5) and (self.call_battery_5 == False):
-				self.val["text"]='드론의배터리가 거의다 소모 되었습니다. 잠시후 비상착륙합니다.'
+				self.val["text"]='드론의 배터리가 거의다 소모되었습니다. 잠시후 비상착륙합니다.'
 				self.play_audio()
 				self.call_battery_5=True
 
@@ -124,9 +124,9 @@ class TTS():
 		per_cdn=distance.euclidean((prevtarget[0][0],prevtarget[0][1]),(prevtarget[0][2],prevtarget[0][3]))
 		#dict in list
 		print(obstacle)
+		#Battery Check
+		self.call_battery(battery)
 		for o in obstacle:
-			#Battery Check
-			self.call_battery(battery)
 			#50% over
 			if o['confidence']>0.4:
 				print("in")

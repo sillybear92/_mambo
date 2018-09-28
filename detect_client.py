@@ -244,14 +244,9 @@ def main():
 	speech.start()
 	print('Start STT PROCESS--')
 	prevTime,targetOn,angleStack,yawTime=0,0,0,0
-	pygame.mixer.init(16000, -16, 1, 2048)
 	tts=TTS()
 	tts.setID(TTS_SECRET.id,TTS_SECRET.secret)
 	while(True):
-		if (speech.is_alive()==False) or (mov.droneBattery < 2):
-			mov.droneStop()
-			exit(0)
-			print('DISCONNECT !!!!!!!!!!!!')
 		if not targetOn:
 			img,result = client.sendData(b'hdg')
 			if result==-1:
@@ -281,13 +276,21 @@ def main():
 			tts.mostRisk(detect_result,prevtarget,img,mov.droneBattery)
 
 		cv2.imshow('video',img)
+		mov.update()
 		key=cv2.waitKey(10)
 		if ord('p')==key:
 			mov.droneStart()
-		if ord('q')==key:
+		elif ord('q')==key:
 			mov.droneStop()
 			exit(0)
-		mov.update()
+		elif ord('n')==key:
+			mov.droneBattery=8
+		elif ord('m')==key:
+			mov.droneBattery=3
+		if (speech.is_alive()==False) or (mov.droneBattery < 2):
+			mov.droneStop()
+			exit(0)
+			print('DISCONNECT !!!!!!!!!!!!')
 	print('== Turn over ==')
 
 if __name__=='__main__':

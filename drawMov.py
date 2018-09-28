@@ -46,6 +46,7 @@ class drawMov:
 		self.mambo.set_max_tilt(1)
 
 	def droneStart(self):
+		print('take off')
 		self.mambo.safe_takeoff(5)
 
 
@@ -67,7 +68,7 @@ class drawMov:
 		cv2.line(img,(self.center[0],self.center[1]),(moveCenter[0],moveCenter[1]),(255,0,0),2)
 
 	def getAngle(self,img):
-		moveCenter=self.getStandardCenter(imbatteryg)
+		moveCenter=self.getStandardCenter(img)
 		distance=math.sqrt((moveCenter[0]-self.center[0])**2+(moveCenter[1]-self.center[1])**2)
 		cTheta=(moveCenter[1]-self.center[1])/(distance+10e-5)
 		angle=math.degrees(math.acos(cTheta))
@@ -153,7 +154,7 @@ class drawMov:
 		if pos==[0,0,0,0]:
 			stack=0
 		else:
-			#self.mambo.fly_direct(roll=roll, pitch=pitch, yaw=yaw, vertical_movement=vertical, duration=duration)
+			self.mambo.fly_direct(roll=roll, pitch=pitch, yaw=yaw, vertical_movement=vertical, duration=duration)
 			print('Roll:',roll,' Pitch:',pitch,' Yaw:',yaw,' Vertical:',vertical)
 
 		return stack,yawTime
