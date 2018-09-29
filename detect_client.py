@@ -87,7 +87,7 @@ def distance_Box(old_track,new_track):
 		# Same Hand to list
 		for p_x,p_y in zip(p_old,p_new):
 			old_track[p_x].append(new_track[p_y][-1])
-			if len(old_track[p_x])>70:
+			if len(old_track[p_x])>40:
 				del old_track[p_x][0]
 		''' ex) old_point.shape(3,1,2) * new_point.shape(2,1,2)
 			=> mask.shape(3,2)
@@ -137,9 +137,6 @@ def shape_detect(client,mask,rec_info,targetOn,tracker,drone):
 							if result==-1:
 								return 
 							targetOn,target=get_target(img,result,tracker,target_hand[0],targetOn)
-							mov.setTarget(target[0])
-							mov.droneStart()
-							print("connected: %s" % mov.droneCheck)
 						del rec_info[x][0]
 		else:
 			shape = "not_detect"
@@ -262,6 +259,10 @@ def main():
 			#detect_shape
 			rec_info,targetOn,prevtarget,mov=shape_detect(client,mask,rec_info,targetOn,tracker,mov)
 			img=cv2.add(img,mask)
+			if targetOn:
+				mov.setTarget(prevtarget[0])
+				mov.droneStart()
+				print("connected: %s" % mov.droneCheck)
 		else:
 			img,result = client.sendData(b'psg')
 			img,detect_result = client.sendData(b'dtg')
