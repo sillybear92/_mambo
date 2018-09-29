@@ -13,12 +13,12 @@ import sys
 import time
 import imutils
 import pickle
-import drawMov
-import stt
+from lib import stt
 from multiprocessing import Process
-from netInfo import netInfo
-from TTS import TTS
+from lib.netInfo import netInfo
+from lib.TTS import TTS
 from TTS_SECRET import TTS_SECRET
+from lib import drawMov
 
 
 # Draw_rec and person motion recognition save

@@ -36,7 +36,7 @@ from google.api_core import exceptions
 import six
 from google.oauth2 import service_account
 
-import sttStream
+from lib import sttStream
 # [END import_libraries]
 
 
