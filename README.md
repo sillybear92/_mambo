@@ -19,18 +19,18 @@
   
 ## 사용환경
    * ### 아나콘다
-      - [설치](https://www.anaconda.com/download/)
+      - [Install](https://www.anaconda.com/download/)
       - Anaconda 3.6 설치 후 3.5 로 다운그레이드 하십시오.
       - conda install python=3.5
    * ### CUDA
-      - [설치](https://developer.nvidia.com/cuda-90-download-archive)
+      - [Install](https://developer.nvidia.com/cuda-90-download-archive)
       - NVIDIA 그래픽 카드 및 GPU를 사용한다면 설치해주십시오.
       - CUDA 9.0 버전으로 설치하십시오.
    * ### Cudnn
-      - [설치](https://developer.nvidia.com/cudnn)
+      - [Install](https://developer.nvidia.com/cudnn)
       - CUDA 버전에 맞는 Cudnn 라이브러리를 설치하십시오.
    * ### Tensorflow
-      - [설치](https://www.tensorflow.org/install/?hl=ko)
+      - [Tensorflow Documentation](https://www.tensorflow.org/install/?hl=ko)
       - GPU를 사용한다면 Tensorflow-GPU를 설치하십시오.
    * ### OpenCV
       - conda install opencv -c conda-forge 
@@ -39,14 +39,15 @@
       - 패럿 맘보를 제어하는 Python 코드 입니다.
    * ### Naver TTS
       - 네이버에서 제공하는 음성처리 라이브러리.
+      - [TTS Documentation]
       - private key를 detect_client.py의 246번재 라인에 추가하십시오.
    * ### Google STT
       - 구글에서 제공하는 음성인식 라이브러리.
-      - [설치](https://cloud.google.com/speech-to-text/docs/quickstart)
+      - [STT Documentation](https://cloud.google.com/speech-to-text/docs/quickstart)
       - private key Json 파일을 다운로드 하십시오.
       - 위 Json 파일의 경로를 lib/stt.py 의 183번째 라인에 추가하십시오.
    * ### Yolo pb 파일
-      - [다운로드](https://drive.google.com/open?id=1-wnS9bJGFwhNmluJnpWyGnCoC59xqD3M)
+      - [pb & meta File Download](https://drive.google.com/open?id=1-wnS9bJGFwhNmluJnpWyGnCoC59xqD3M)
       - Yolo 체크포인트 파일.
       - 위 pb 파일을 다운로드 받아 파일의 경로를 detect_server.py 의 60번째 라인에 각각 추가하십시오.
       
