@@ -239,6 +239,7 @@ def main():
 	mov=drawMov.drawMov()
 	while not mov.droneCheck:
 		mov.droneConnect()
+		print('Power On Drone')
 	# Speech recognize
 	speech=Process(target=stt.run)
 	speech.start()
