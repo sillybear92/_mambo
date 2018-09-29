@@ -22,7 +22,7 @@ Example usage:
 """
 
 # [START import_libraries]
-from __future__ import division
+#from __future__ import division
 
 import argparse
 import collections

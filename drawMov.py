@@ -120,12 +120,12 @@ class drawMov:
 		return roll,vertical,yaw,stackLR,yawCount
 
 	def getStandardCenter(self,img):
-		return [int(img.shape[1]/2),int(img.shape[0]/2+100)]
+		return [int(img.shape[1]/2),int(img.shape[0]/2+80)]
 
 	def getStandardBox(self,img):
 		standardCenter=self.getStandardCenter(img)
-		inBox=(80,200)
-		outBox=(130,300)
+		inBox=(130,300)
+		outBox=(200,380)
 		cv2.rectangle(img,(int(standardCenter[0]-inBox[0]/2),int(standardCenter[1]-inBox[1]/2)),
 			(int(standardCenter[0]+inBox[0]/2),int(standardCenter[1]+inBox[1]/2)),(0,0,255),1)
 		cv2.rectangle(img,(int(standardCenter[0]-outBox[0]/2),int(standardCenter[1]-outBox[1]/2)),
@@ -135,9 +135,9 @@ class drawMov:
 	def adjustBox(self,img):
 		pitch = 0
 		inBox,outBox=self.getStandardBox(img)
-		if self.width<inBox[0] and self.height<inBox[1]:
+		if self.width*self.height<inBox[0]*inBox[1]:
 			pitch = 100
-		elif self.width>outBox[0] and self.height>outBox[1]:
+		elif self.width*self.height>outBox[0]*outBox[1]:
 			pitch = -100
 		return pitch
 

@@ -20,7 +20,7 @@ Example usage:
     python transcribe_streaming_mic.py
 """
 
-from __future__ import division
+#from __future__ import division
 
 import argparse
 import re
