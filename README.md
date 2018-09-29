@@ -13,8 +13,8 @@
   2. 패럿 맘보와 연결이 되면 카메라 영상 스트리밍이 실시된다. <br>
   3. 카메라 앞에서 네모를 3~4회 그리면 타겟으로 인식되고, 인식됨과 동시에 맘보가 이륙한다. <br>
   4. 맘보가 나를 추적하기 시작하며, 전방의 위험물체가 나와의 거리가 기준보다 가까워 지면 음성으로 알려준다. <br>
-  5. 본 프로그램에서는 손,사람,자동차, 자전거, 볼라드, 신호등, 책상, 의자가 인식된다. <br>
-  6. 착륙 음성 명령은 "맘보 그만해" 이며, 드론의 배터리가 10% 미만일 때 비상착륙 안내메세지가 나옴. <br>
+  5. 본 프로그램에서는 손, 사람, 자동차, 자전거, 볼라드, 신호등, 책상, 의자가 인식된다. <br>
+  6. 착륙 음성 명령은 "맘보 그만해" 이며, 드론의 배터리가 10% 미만일 때 비상착륙 안내메세지가 나온다. <br>
   7. 비상 종료키는 'q' & 'ctrl + c' 이다. <br>
   
 ## 사용환경
@@ -47,7 +47,7 @@
       - private key Json 파일을 다운로드 하십시오.
       - 위 Json 파일의 경로를 lib/stt.py 의 183번째 라인에 추가하십시오.
    * ### Yolo pb 파일
-      - [pb & meta File Download](https://drive.google.com/open?id=1-wnS9bJGFwhNmluJnpWyGnCoC59xqD3M)
+      - [pb & meta Files Download](https://drive.google.com/open?id=1-wnS9bJGFwhNmluJnpWyGnCoC59xqD3M)
       - Yolo 체크포인트 파일.
       - 위 pb 파일을 다운로드 받아 파일의 경로를 detect_server.py 의 60번째 라인에 각각 추가하십시오.
       
