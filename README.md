@@ -39,12 +39,12 @@
       - [Pyparrot Documentation](https://pyparrot.readthedocs.io)
       - 패럿 맘보를 제어하는 Python 코드 입니다.
    * ### Naver TTS
-   
+      - 네이버에서 제공하는 음성처리 라이브러리.
    * ### Google STT
+      - 구글에서 제공하는 음성인식 라이브러리.
       - [설치](https://cloud.google.com/speech-to-text/docs/quickstart)
       - private key Json 파일을 다운로드 하십시오.
       - 위 Json 파일의 경로를 lib/stt.py 의 183번째 라인에 추가하십시오.
-      
    * ### Yolo pb 파일
       - [다운로드](https://drive.google.com/open?id=1-wnS9bJGFwhNmluJnpWyGnCoC59xqD3M)
       - Yolo 체크포인트 파일.
