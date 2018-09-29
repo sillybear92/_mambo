@@ -39,8 +39,8 @@
       - 패럿 맘보를 제어하는 Python 코드 입니다.
    * ### Naver TTS
       - 네이버에서 제공하는 음성처리 라이브러리.
-      - [TTS Documentation]
-      - private key를 detect_client.py의 246번재 라인에 추가하십시오.
+      - [TTS Documentation](http://docs.ncloud.com/ko/naveropenapi_v2/naveropenapi-4-2.html#Python)
+      - private key를 detect_client.py의 246번 라인에 추가하십시오.
    * ### Google STT
       - 구글에서 제공하는 음성인식 라이브러리.
       - [STT Documentation](https://cloud.google.com/speech-to-text/docs/quickstart)
