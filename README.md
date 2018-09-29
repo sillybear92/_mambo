@@ -35,11 +35,11 @@
    * ### OpenCV
       - conda install opencv -c conda-forge 
    * ### Pyparrot
-      - [설치](https://github.com/amymcgovern/pyparrot)
       - [Pyparrot Documentation](https://pyparrot.readthedocs.io)
       - 패럿 맘보를 제어하는 Python 코드 입니다.
    * ### Naver TTS
       - 네이버에서 제공하는 음성처리 라이브러리.
+      - private key를 detect_client.py의 246번재 라인에 추가하십시오.
    * ### Google STT
       - 구글에서 제공하는 음성인식 라이브러리.
       - [설치](https://cloud.google.com/speech-to-text/docs/quickstart)
