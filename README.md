@@ -49,4 +49,6 @@
       - Yolo 체크포인트 파일.
       - 위 pb 파일을 다운로드 받아 파일의 경로를 detect_server.py 의 60번째 라인에 각각 추가하십시오.
       
-      
+## 라이센스
+   * [GPLv3 Liscense](https://github.com/sillybear92/testmambo/blob/master/LICENSE)
+   
