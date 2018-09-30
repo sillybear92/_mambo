@@ -101,7 +101,7 @@ def distance_Box(old_track,new_track):
 	return n_track
 
 # Shape from Hand moving line
-def shape_detect(client,mask,rec_info,targetOn,tracker):
+def shape_detect(client,mask,rec_info,targetOn,tracker,drone):
 	grayMask=cv2.cvtColor(mask,cv2.COLOR_RGB2GRAY)
 	blurred=cv2.GaussianBlur(grayMask,(5,5),0)
 	thresh=cv2.threshold(blurred,60,255,cv2.THRESH_BINARY)[1]
@@ -109,6 +109,7 @@ def shape_detect(client,mask,rec_info,targetOn,tracker):
 	cnts=cnts[0] if imutils.is_cv2() else cnts[1]
 	target_hand=[]
 	target=[]
+	mov=drone
 	for c in cnts:
 		shape="not_detect"
 		m=cv2.moments(c)
@@ -136,12 +137,16 @@ def shape_detect(client,mask,rec_info,targetOn,tracker):
 							if result==-1:
 								return 
 							targetOn,target=get_target(img,result,tracker,target_hand[0],targetOn)
+							mov.setTarget(prevtarget[0])
+							mov.droneStart()
+							print("connected: %s" % mov.droneCheck)
+
 						del rec_info[x][0]
 		else:
 			shape = "not_detect"
 		cv2.drawContours(mask,[c],-1,(0,255,0),2)
 		cv2.putText(mask,shape,(cX,cY),cv2.FONT_HERSHEY_SIMPLEX,0.5,(255,255,255),2)
-	return rec_info,targetOn,target
+	return rec_info,targetOn,target,mov
 
 
 def get_target(img,result,tracker,obj,targetOn=1):
@@ -227,8 +232,8 @@ def updateTracker(img,result,tracker,prevtarget):
 
 def main():
 	client=netInfo()
-	client.setServer('bbik.iptime.org',1005)
-	#client.setServer('192.168.0.14',6666)
+	#client.setServer('bbik.iptime.org',1005)
+	client.setServer('192.168.0.14',6666)
 	#client.setServer(sys.argv[1],int(sys.argv[2]))
 	print ("server_address is ", client.server_address[0],client.server_address[1])
 	track,hand,rec_info,prevtarget,detect=[],[],[],[],[]
@@ -257,12 +262,8 @@ def main():
 			track=distance_Box(track,center_Box(hand))
 			cv2.polylines(mask,([np.int32(tr) for tr in track]),False,(255,255,0),3)
 			#detect_shape
-			rec_info,targetOn,prevtarget=shape_detect(client,mask,rec_info,targetOn,tracker)
+			rec_info,targetOn,prevtarget,mov=shape_detect(client,mask,rec_info,targetOn,tracker,mov)
 			img=cv2.add(img,mask)
-			if targetOn:
-				mov.setTarget(prevtarget[0])
-				mov.droneStart()
-				print("connected: %s" % mov.droneCheck)
 		else:
 			img,result = client.sendData(b'psg')
 			img,detect_result = client.sendData(b'dtg')
