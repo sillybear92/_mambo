@@ -101,7 +101,7 @@ def distance_Box(old_track,new_track):
 	return n_track
 
 # Shape from Hand moving line
-def shape_detect(client,mask,rec_info,targetOn,tracker,drone):
+def shape_detect(client,mask,rec_info,targetOn,tracker):
 	grayMask=cv2.cvtColor(mask,cv2.COLOR_RGB2GRAY)
 	blurred=cv2.GaussianBlur(grayMask,(5,5),0)
 	thresh=cv2.threshold(blurred,60,255,cv2.THRESH_BINARY)[1]
@@ -109,7 +109,6 @@ def shape_detect(client,mask,rec_info,targetOn,tracker,drone):
 	cnts=cnts[0] if imutils.is_cv2() else cnts[1]
 	target_hand=[]
 	target=[]
-	mov=drone
 	for c in cnts:
 		shape="not_detect"
 		m=cv2.moments(c)
@@ -142,7 +141,7 @@ def shape_detect(client,mask,rec_info,targetOn,tracker,drone):
 			shape = "not_detect"
 		cv2.drawContours(mask,[c],-1,(0,255,0),2)
 		cv2.putText(mask,shape,(cX,cY),cv2.FONT_HERSHEY_SIMPLEX,0.5,(255,255,255),2)
-	return rec_info,targetOn,target,mov
+	return rec_info,targetOn,target
 
 
 def get_target(img,result,tracker,obj,targetOn=1):
@@ -257,7 +256,7 @@ def main():
 			track=distance_Box(track,center_Box(hand))
 			cv2.polylines(mask,([np.int32(tr) for tr in track]),False,(255,255,0),3)
 			#detect_shape
-			rec_info,targetOn,prevtarget,mov=shape_detect(client,mask,rec_info,targetOn,tracker,mov)
+			rec_info,targetOn,prevtarget=shape_detect(client,mask,rec_info,targetOn,tracker)
 			img=cv2.add(img,mask)
 			if targetOn:
 				mov.setTarget(prevtarget[0])
