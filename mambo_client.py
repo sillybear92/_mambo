@@ -227,7 +227,8 @@ def updateTracker(img,result,tracker,prevtarget):
 
 def main():
 	client=netInfo()
-	client.setServer('192.168.0.14',6666)
+	client.setServer('bbik.iptime.org',1005)
+	#client.setServer('192.168.0.14',6666)
 	#client.setServer(sys.argv[1],int(sys.argv[2]))
 	print ("server_address is ", client.server_address[0],client.server_address[1])
 	track,hand,rec_info,prevtarget,detect=[],[],[],[],[]
