@@ -223,8 +223,8 @@ def updateTracker(img,result,tracker,prevtarget):
 	print('prevtarget:',prevtarget)
 	if ok:
 		check,target=get_target(img,result,tracker,bbox)
-		cv2.rectangle(img,(bbox[0],bbox[1]),(bbox[2],bbox[3]),(0,255,0),3)
-		cv2.putText(img,"Tracker",(bbox[2], bbox[1]-5), cv2.FONT_HERSHEY_COMPLEX_SMALL,1,(0,255,0),2)
+		#cv2.rectangle(img,(bbox[0],bbox[1]),(bbox[2],bbox[3]),(0,255,0),3)
+		#cv2.putText(img,"Tracker",(bbox[2], bbox[1]-5), cv2.FONT_HERSHEY_COMPLEX_SMALL,1,(0,255,0),2)
 	else:
 		check,target=get_target(img,result,tracker,prevtarget[0])
 	return target

@@ -47,7 +47,7 @@ class drawMov:
 
 	def droneStart(self):
 		print('take off')
-		self.mambo.safe_takeoff(5)
+		#self.mambo.safe_takeoff(5)
 
 
 	def droneStop(self):
