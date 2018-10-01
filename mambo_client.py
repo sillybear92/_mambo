@@ -130,14 +130,14 @@ def shape_detect(client,mask,rec_info,targetOn,tracker,drone):
 			else:
 				for x,y in zip(p_1,p_2):
 					rec_info[x].append([cX,cY])
-					if len(rec_info[x])>10:
+					if len(rec_info[x])>20:
 						if not targetOn:
 							target_hand.append([c[-1][0][0],c[-1][0][1],c[-1][0][0],c[-1][0][1]])
 							img,result = client.sendData(b'psg')
 							if result==-1:
 								return 
 							targetOn,target=get_target(img,result,tracker,target_hand[0],targetOn)
-							mov.setTarget(prevtarget[0])
+							mov.setTarget(target[0])
 							mov.droneStart()
 							print("connected: %s" % mov.droneCheck)
 
