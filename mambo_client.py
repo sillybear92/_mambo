@@ -130,7 +130,7 @@ def shape_detect(client,mask,rec_info,targetOn,tracker,drone):
 			else:
 				for x,y in zip(p_1,p_2):
 					rec_info[x].append([cX,cY])
-					if len(rec_info[x])>20:
+					if len(rec_info[x])>30:
 						if not targetOn:
 							target_hand.append([c[-1][0][0],c[-1][0][1],c[-1][0][0],c[-1][0][1]])
 							img,result = client.sendData(b'psg')
@@ -223,8 +223,8 @@ def updateTracker(img,result,tracker,prevtarget):
 	print('prevtarget:',prevtarget)
 	if ok:
 		check,target=get_target(img,result,tracker,bbox)
-		cv2.rectangle(img,(bbox[0],bbox[1]),(bbox[2],bbox[3]),(0,255,0),3)
-		cv2.putText(img,"Tracker",(bbox[2], bbox[1]-5), cv2.FONT_HERSHEY_COMPLEX_SMALL,1,(0,255,0),2)
+#		cv2.rectangle(img,(bbox[0],bbox[1]),(bbox[2],bbox[3]),(0,255,0),3)
+#		cv2.putText(img,"Tracker",(bbox[2], bbox[1]-5), cv2.FONT_HERSHEY_COMPLEX_SMALL,1,(0,255,0),2)
 	else:
 		check,target=get_target(img,result,tracker,prevtarget[0])
 	return target

@@ -148,8 +148,8 @@ class TTS():
 	#risk factor distinction
 	def mostRisk(self,obstacle,prevtarget,img,battery):
 		print("func in")
-		risk_distance=10000self.run(alarm,self.flag)
-		per_cdnself.run(alarm,self.flag)=distance.euclidean((prevtarget[0][0],prevtarget[0][1]),(prevtarget[0][2],prevtarget[0self.run(alarm,self.flag)][3]))
+		risk_distance=10000
+		per_cdn=distance.euclidean((prevtarget[0][0],prevtarget[0][1]),(prevtarget[0][2],prevtarget[0][3]))
 		#dict in list
 		print(obstacle)
 		#Battery Check
