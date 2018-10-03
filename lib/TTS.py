@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 #coding=utf8
 ## TTS만 Thread
+#	reference:
+#			http://docs.ncloud.com/ko/naveropenapi_v2/naveropenapi-4-2.html#Python
+#
 import os
 import sys
 import urllib
