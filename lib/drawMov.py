@@ -72,7 +72,6 @@ class drawMov:
 		distance=math.sqrt((moveCenter[0]-self.center[0])**2+(moveCenter[1]-self.center[1])**2)
 		cTheta=(moveCenter[1]-self.center[1])/(distance+10e-5)
 		angle=math.degrees(math.acos(cTheta))
-
 		return angle
 
 	def drawCenter(self,img):
