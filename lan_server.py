@@ -98,7 +98,7 @@ def distance_Box(old_track,new_track):
 	return n_track
 
 # Shape from Hand moving line
-def shape_detect(img,mask,rec_info,targetOn,tracker):
+def shape_detect(img,mask,rec_info,targetOn,tracker,tf_person):
 	grayMask=cv2.cvtColor(mask,cv2.COLOR_RGB2GRAY)
 	blurred=cv2.GaussianBlur(grayMask,(5,5),0)
 	thresh=cv2.threshold(blurred,60,255,cv2.THRESH_BINARY)[1]
@@ -221,12 +221,11 @@ def updateTracker(img,result,tracker,prevtarget):
 	return target
 
 def pickling(tOn,hd,tr,detect,t):
-	dopick={'targetOn':tOn, 'hand':hd, 'track':tr, 'detect_result':detect, 'target':tr}
+	dopick={'on':tOn, 'hand':hd, 'track':tr, 'detect_result':detect, 'target':t}
 	buffer = pickle.dumps(dopick,protocol=2)
 	return buffer
 
 def unpick_img(unpick):
-	print(unpick)
 	i = unpick["image"]
 	array = np.frombuffer(i, dtype=np.dtype('uint8'))
 	return cv2.imdecode(array,1)
@@ -238,14 +237,17 @@ def main():
 	client.setClient(5001)
 	#client.setServer(sys.argv[1],int(sys.argv[2]))
 	print ("server_address is ", client.server_address[0],client.server_address[1])
+	try:
+		unpick = client.sendData(b'get')
+	except Exception as ex: 
+    		print('Can Not Connect Server', ex)
+    		exit() 
 	track,hand,rec_info,prevtarget,detect=[],[],[],[],[]
-	tracker=createTrackerByName("CSRT")
+	tracker=createTrackerByName("KCF")
 	prevTime,targetOn,angleStack,yawTime=0,0,0,0
-	unpick = client.sendData(b'get')
-	img=unpick_img(unpick)
-	tf_hand=resultTF("hand",img)
-	tf_person=resultTF("person",img)
-	tf_detect=resultTF("detect",img)
+	tf_hand=resultTF("hand")
+	tf_person=resultTF("person")
+	tf_detect=resultTF("detect")
 	print('setting up on capThread.')
 	tf_hand.start()
 	tf_person.start()
@@ -253,10 +255,12 @@ def main():
 	print('starting up on capThread.')
 	while(True):
 		unpick = client.sendData(b'get')
+		if unpick == -1 :
+			continue
 		img=unpick_img(unpick)
-		net_targeton,net_hand,net_track,net_detectResult,net_target=0,[],[],None,None
+		net_targeton,net_hand,net_track,net_detectResult,net_target=0,None,None,None,None
 		if not targetOn:
-			result=tf_hand.getBuffer()
+			result=tf_hand.getBuffer(img)
 			gray=cv2.cvtColor(img,cv2.COLOR_RGB2GRAY)
 			mask=np.ones_like(img,np.uint8)
 			# Display FPS
@@ -265,7 +269,7 @@ def main():
 			track=distance_Box(track,center_Box(hand))
 			cv2.polylines(mask,([np.int32(tr) for tr in track]),False,(255,255,0),3)
 			#detect_shape
-			rec_info,targetOn,prevtarget=shape_detect(img,mask,rec_info,targetOn,tracker)
+			rec_info,targetOn,prevtarget=shape_detect(img,mask,rec_info,targetOn,tracker,tf_person)
 			net_targeton=targetOn
 			if targetOn:
 				# give targetFLAG
@@ -282,8 +286,8 @@ def main():
 			img=cv2.add(img,mask)
 
 		else:
-			result=tf_person.getBuffer()
-			detect_result=tf_detect.getBuffer()
+			result=tf_person.getBuffer(img)
+			detect_result=tf_detect.getBuffer(img)
 			# Display FPS
 			prevTime=dp_fps(img,prevTime)
 			prevtarget=updateTracker(img,result,tracker,prevtarget)
@@ -293,8 +297,6 @@ def main():
 			net_target=prevtarget[0]
 			data=pickling(net_targeton,net_hand,net_track,net_detectResult,net_target)
 			client.sock.sendto(data,client.server_address)
-
-
 		cv2.imshow('server',img)
 		key=cv2.waitKey(10)
 		if ord('q')==key:

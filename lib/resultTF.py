@@ -1,17 +1,18 @@
 from threading import Thread, Lock
 from darkflow.net.build import TFNet
 import sys
+import numpy as np
 
 class resultTF(Thread):
-	def __init__(self,option=None,img=None):
+	def __init__(self,option=None):
 		Thread.__init__(self)
 		self.running = True
-		self.image = img
+		self.image = None
 		self.lock = Lock()
 		self.result = None
 		self.option = option
 		self.tf=None
-		self.preconnect(self.img)
+		self.preconnect()
 
 	def stop(self):
 		self.running = False
@@ -39,6 +40,7 @@ class resultTF(Thread):
 		tfOptions = {"hand" : optionHand, "person" : optionPerson, "detect": optionDetect}
 		return tfOptions[option]
 
-	def preconnect(self,img):
+	def preconnect(self):
 		self.tf=TFNet(self.getOption(self.option))
-		self.result = self.tf.return_predict(img)
+		ones_img=np.ones((600,800,3),np.uint8)
+		self.result = self.tf.return_predict(ones_img)
