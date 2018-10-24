@@ -77,8 +77,8 @@ def main():
 	#port = 5001
 	#port = 6666
 	client=netInfo()
-	#client.setServer('bbik.iptime.org',1005)
-	client.setServer('192.168.0.14',5001)
+	client.setServer('bbik.iptime.org',1005)
+	#client.setServer('192.168.0.14',5001)
 	client.setClient(6666)
 	cap=VideoCapture()
 	print('setting up on capThread.')
@@ -154,6 +154,7 @@ def main():
 				exit(0)
 		except Exception as ex:
 			print('Client_Error!! ', ex)
+			client.sock.sendto(b'connect server',client.server_address)
 
 	print("Bye..")
 
