@@ -39,4 +39,3 @@ class netInfo:
 	def sendData(self,message):
 		self.sock.sendto(message,self.address)
 		return pickle.loads(self.getData())
-
