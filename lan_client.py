@@ -99,6 +99,7 @@ def main():
 	tts=TTS()
 	tts.setID(TTS_SECRET.id,TTS_SECRET.secret)
 	targetOn,hand,mask,angleStack,yawTime,prevTime,target=0,None,None,0,0,0,None
+	client.sock.sendto(b'connect server',client.server_address)
 	while(True):
 		try:
 			data, address = client.sock.recvfrom(65507)
@@ -152,7 +153,7 @@ def main():
 				client.sock.close()
 				exit(0)
 		except Exception as ex:
-			print('Can Not Receive Data', ex)
+			print('Client_Error!! ', ex)
 
 	print("Bye..")
 

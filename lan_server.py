@@ -233,27 +233,21 @@ def unpick_img(unpick):
 	return cv2.imdecode(array,1)
 
 def net_check(client):
-	net_Flag=False
-	while not net_Flag:
+	data=-1
+	while data==-1:
 		try:
-			unpick = client.sendData(b'get')
+			data = client.getData()
 		except Exception as ex: 
 	    		print('Can Not Connect Server', ex)
 	    		sleep(5)
-	return unpick
+	return data
 
 def main():
 	client=netInfo()
-	#client.setServer('bbik.iptime.org',1005)
-	#client.setServer('192.168.0.14',6666)
-	client.setServer('1.218.172.194',1005)
 	client.setClient(5001)
-	#client.setServer(sys.argv[1],int(sys.argv[2]))
-	print ("server_address is ", client.server_address[0],client.server_address[1])
-	unpick=net_check(client)
 	track,hand,rec_info,prevtarget,detect=[],[],[],[],[]
 	tracker=createTrackerByName("KCF")
-	prevTime,targetOn,angleStack,yawTime=0,0,0,0
+	prevTime,targetOn,angleStack,yawTime,net_flag=0,0,0,0,-1
 	tf_hand=resultTF("hand")
 	tf_person=resultTF("person")
 	tf_detect=resultTF("detect")
@@ -262,55 +256,61 @@ def main():
 	tf_person.start()
 	tf_detect.start()
 	print('starting up on capThread.')
-	while(True):
-		unpick=net_check(client)
-		if unpick == -1 :
-			continue
-		img=unpick_img(unpick)
-		net_targeton,net_hand,net_track,net_detectResult,net_target=0,None,None,None,None
-		if not targetOn:
-			result=tf_hand.getBuffer(img)
-			gray=cv2.cvtColor(img,cv2.COLOR_RGB2GRAY)
-			mask=np.ones_like(img,np.uint8)
-			# Display FPS
-			prevTime=dp_fps(img,prevTime)
-			hand=draw_rectangle(img,result)
-			track=distance_Box(track,center_Box(hand))
-			cv2.polylines(mask,([np.int32(tr) for tr in track]),False,(255,255,0),3)
-			#detect_shape
-			rec_info,targetOn,prevtarget=shape_detect(img,mask,rec_info,targetOn,tracker,tf_person)
-			net_targeton=targetOn
-			if targetOn:
-				# give targetFLAG
-				net_target=prevtarget[0]
-				data=pickling(net_targeton,net_hand,net_track,net_detectResult,net_target)
-				client.sock.sendto(data,client.server_address)
+	while True:
+		while net_flag==-1:
+			net_flag = net_check(client)
+		while True:
+			try:
+				unpick = client.sendData(b'get')
+				img=unpick_img(unpick)
+				net_targeton,net_hand,net_track,net_detectResult,net_target=0,None,None,None,None
+				if not targetOn:
+					result=tf_hand.getBuffer(img)
+					gray=cv2.cvtColor(img,cv2.COLOR_RGB2GRAY)
+					mask=np.ones_like(img,np.uint8)
+					# Display FPS
+					prevTime=dp_fps(img,prevTime)
+					hand=draw_rectangle(img,result)
+					track=distance_Box(track,center_Box(hand))
+					cv2.polylines(mask,([np.int32(tr) for tr in track]),False,(255,255,0),3)
+					#detect_shape
+					rec_info,targetOn,prevtarget=shape_detect(img,mask,rec_info,targetOn,tracker,tf_person)
+					net_targeton=targetOn
+					if targetOn:
+						# give targetFLAG
+						net_target=prevtarget[0]
+						data=pickling(net_targeton,net_hand,net_track,net_detectResult,net_target)
+						client.sock.sendto(data,client.address)
 
-			# else : give hand, track, 
-			else:
-				net_hand=hand
-				net_track=track
-				data=pickling(net_targeton,net_hand,net_track,net_detectResult,net_target)
-				client.sock.sendto(data,client.server_address)
-			img=cv2.add(img,mask)
+					# else : give hand, track, 
+					else:
+						net_hand=hand
+						net_track=track
+						data=pickling(net_targeton,net_hand,net_track,net_detectResult,net_target)
+						client.sock.sendto(data,client.address)
+					img=cv2.add(img,mask)
 
-		else:
-			result=tf_person.getBuffer(img)
-			detect_result=tf_detect.getBuffer(img)
-			# Display FPS
-			prevTime=dp_fps(img,prevTime)
-			prevtarget=updateTracker(img,result,tracker,prevtarget)
-			# give detect_result & prevtarget[0]
-			net_targeton=targetOn
-			net_detectResult=detect_result
-			net_target=prevtarget[0]
-			data=pickling(net_targeton,net_hand,net_track,net_detectResult,net_target)
-			client.sock.sendto(data,client.server_address)
-		cv2.imshow('server',img)
-		key=cv2.waitKey(10)
-		if ord('q')==key:
-			client.sock.close()
-			exit(0)
+				else:
+					result=tf_person.getBuffer(img)
+					detect_result=tf_detect.getBuffer(img)
+					# Display FPS
+					prevTime=dp_fps(img,prevTime)
+					prevtarget=updateTracker(img,result,tracker,prevtarget)
+					# give detect_result & prevtarget[0]
+					net_targeton=targetOn
+					net_detectResult=detect_result
+					net_target=prevtarget[0]
+					data=pickling(net_targeton,net_hand,net_track,net_detectResult,net_target)
+					client.sock.sendto(data,client.address)
+				cv2.imshow('server',img)
+				key=cv2.waitKey(10)
+				if ord('q')==key:
+					client.sock.close()
+					exit(0)
+			except Exception as ex:
+				print('Sever_Error!! ', ex)
+				net_flag=-1
+				break
 	print('== Turn over ==')
 
 if __name__=='__main__':

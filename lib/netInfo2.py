@@ -12,6 +12,7 @@ class netInfo:
 		self.server_address = None
 		self.client_host = None
 		self.client_port = None
+		self.address=None
 
 	def setServer(self,host,port):
 		self.host=host
@@ -26,22 +27,16 @@ class netInfo:
 		self.sock.settimeout(0.5)
 
 
-	def sendData(self,message):
-		self.sock.sendto(message,self.server_address)
+	def getData(self):
 		try:
-			data,server = self.sock.recvfrom(65507)
-		except socket.timeout as err:
-			print("Timeout !! again !! ")
+			data,self.address = self.sock.recvfrom(65507)
+		except Exception as ex:
+			print('Net_getData_Error!! ', ex)
 			return -1
 		print("Fragment size: {}".format(len(data)))
-		if len(data) == 4:
-			while(len(data)==4):
-				self.sock.sendto(message,self.server_address)
-				try:
-					data,server = self.sock.recvfrom(65507)
-				except socket.timeout as err:
-					print("Timeout !! again !! ")
-					return -1
-				print("Fragment size: {}".format(len(data)))
-		return pickle.loads(data)
+		return data
+
+	def sendData(self,message):
+		self.sock.sendto(message,self.address)
+		return pickle.loads(self.getData())
 
