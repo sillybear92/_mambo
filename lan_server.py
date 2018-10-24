@@ -16,6 +16,8 @@ import pickle
 from multiprocessing import Process
 from lib.netInfo2 import netInfo
 from lib.resultTF import resultTF
+from time import sleep
+
 
 
 # Draw_rec and person motion recognition save
@@ -230,6 +232,16 @@ def unpick_img(unpick):
 	array = np.frombuffer(i, dtype=np.dtype('uint8'))
 	return cv2.imdecode(array,1)
 
+def net_check(client):
+	net_Flag=False
+	while not net_Flag:
+		try:
+			unpick = client.sendData(b'get')
+		except Exception as ex: 
+	    		print('Can Not Connect Server', ex)
+			sleep(5)
+	return unpick
+
 def main():
 	client=netInfo()
 	#client.setServer('bbik.iptime.org',1005)
@@ -237,11 +249,7 @@ def main():
 	client.setClient(5001)
 	#client.setServer(sys.argv[1],int(sys.argv[2]))
 	print ("server_address is ", client.server_address[0],client.server_address[1])
-	try:
-		unpick = client.sendData(b'get')
-	except Exception as ex: 
-    		print('Can Not Connect Server', ex)
-    		exit() 
+	unpick=net_check(client)
 	track,hand,rec_info,prevtarget,detect=[],[],[],[],[]
 	tracker=createTrackerByName("KCF")
 	prevTime,targetOn,angleStack,yawTime=0,0,0,0
@@ -254,7 +262,7 @@ def main():
 	tf_detect.start()
 	print('starting up on capThread.')
 	while(True):
-		unpick = client.sendData(b'get')
+		unpick=net_check(client)
 		if unpick == -1 :
 			continue
 		img=unpick_img(unpick)
