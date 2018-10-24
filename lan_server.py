@@ -245,7 +245,8 @@ def net_check(client):
 def main():
 	client=netInfo()
 	#client.setServer('bbik.iptime.org',1005)
-	client.setServer('192.168.0.14',6666)
+	#client.setServer('192.168.0.14',6666)
+	client.setServer('1.218.172.194',1005)
 	client.setClient(5001)
 	#client.setServer(sys.argv[1],int(sys.argv[2]))
 	print ("server_address is ", client.server_address[0],client.server_address[1])
