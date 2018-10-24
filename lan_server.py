@@ -239,7 +239,7 @@ def net_check(client):
 			unpick = client.sendData(b'get')
 		except Exception as ex: 
 	    		print('Can Not Connect Server', ex)
-			sleep(5)
+	    		sleep(5)
 	return unpick
 
 def main():
