@@ -67,6 +67,9 @@ def center_Box(obj):
 
 #Distance of Hand - point Distance
 def distance_Box(old_track,new_track):
+	HAND_CENTER_DISTANCE=30
+	HAND_COUNT=8
+	HAND_LINE_LENGTH=60
 	n_track=[]
 	len_old = len(old_track)
 	len_new = len(new_track)
@@ -81,12 +84,12 @@ def distance_Box(old_track,new_track):
 		new_point=np.float32([new_tr[-1] for new_tr in new_track]).reshape(1,-1,2)
 		''' befor Hand detection position - now Hand detection position < 60 :: bigger distance < 60
 			-> Same Hand '''
-		mask=abs(old_point-new_point).max(-1)<60
+		mask=abs(old_point-new_point).max(-1)<HAND_CENTER_DISTANCE
 		p_old,p_new=np.where(mask==True)
 		# Same Hand to list
 		for p_x,p_y in zip(p_old,p_new):
 			old_track[p_x].append(new_track[p_y][-1])
-			if len(old_track[p_x])>40:
+			if len(old_track[p_x])>HAND_LINE_LENGTH:
 				del old_track[p_x][0]
 		''' ex) old_point.shape(3,1,2) * new_point.shape(2,1,2)
 			=> mask.shape(3,2)
@@ -94,13 +97,15 @@ def distance_Box(old_track,new_track):
 		z_index=np.concatenate(np.where(mask.sum(axis=0)==0))
 		for zz in z_index:
 			old_track.append(new_track[zz])
-			if len(old_track)>6:
+			if len(old_track)>HAND_COUNT:
 				del old_track[0]
 		n_track=old_track
 	return n_track
 
 # Shape from Hand moving line
 def shape_detect(img,mask,rec_info,targetOn,tracker,tf_person):
+	RECTANGLE_POINT_DISTANCE=10
+	SAME_RECTANGLE_POINT=20
 	grayMask=cv2.cvtColor(mask,cv2.COLOR_RGB2GRAY)
 	blurred=cv2.GaussianBlur(grayMask,(5,5),0)
 	thresh=cv2.threshold(blurred,60,255,cv2.THRESH_BINARY)[1]
@@ -121,14 +126,14 @@ def shape_detect(img,mask,rec_info,targetOn,tracker,tf_person):
 		if len(approx) == 4:
 			shape = "rectangle"
 			rec_point=abs(np.array([rec[-1] for rec in rec_info]).reshape(-1,1,2)\
-				-np.array([cX,cY]).reshape(1,-1,2)).max(-1)<10
+				-np.array([cX,cY]).reshape(1,-1,2)).max(-1)<RECTANGLE_POINT_DISTANCE
 			p_1,p_2=np.where(rec_point==True)
 			if len(p_1)==0:
 				rec_info.append([[cX,cY]])
 			else:
 				for x,y in zip(p_1,p_2):
 					rec_info[x].append([cX,cY])
-					if len(rec_info[x])>20:
+					if len(rec_info[x])>SAME_RECTANGLE_POINT:
 						if not targetOn:
 							target_hand.append([c[-1][0][0],c[-1][0][1],c[-1][0][0],c[-1][0][1]])
 							result=tf_person.getBuffer(img)
@@ -216,8 +221,8 @@ def updateTracker(img,result,tracker,prevtarget):
 	print('prevtarget:',prevtarget)
 	if ok:
 		check,target=get_target(img,result,tracker,bbox)
-		#cv2.rectangle(img,(bbox[0],bbox[1]),(bbox[2],bbox[3]),(0,255,0),3)
-		#cv2.putText(img,"Tracker",(bbox[2], bbox[1]-5), cv2.FONT_HERSHEY_COMPLEX_SMALL,1,(0,255,0),2)
+		cv2.rectangle(img,(bbox[0],bbox[1]),(bbox[2],bbox[3]),(0,255,0),3)
+		cv2.putText(img,"Tracker",(bbox[2], bbox[1]-5), cv2.FONT_HERSHEY_COMPLEX_SMALL,1,(0,255,0),2)
 	else:
 		check,target=get_target(img,result,tracker,prevtarget[0])
 	return target
@@ -308,7 +313,7 @@ def main():
 					client.sock.close()
 					exit(0)
 			except Exception as ex:
-				print('Sever_Error!! ', ex)
+				print('Server_Error!! ', ex)
 				net_flag=-1
 				break
 	print('== Turn over ==')
