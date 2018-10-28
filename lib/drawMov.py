@@ -119,12 +119,13 @@ class drawMov:
 		return roll,vertical,yaw,stackLR,yawCount
 
 	def getStandardCenter(self,img):
-		return [int(img.shape[1]/2),int(img.shape[0]/2+80)]
+		return [int(img.shape[1]/2),int(img.shape[0]/2+150)]
+		#80->150
 
 	def getStandardBox(self,img):
 		standardCenter=self.getStandardCenter(img)
-		inBox=(130,300)
-		outBox=(200,380)
+		inBox=(250,300) #(130,300)->(250,300)
+		outBox=(330,380) #(200,380)->(330,380)
 		cv2.rectangle(img,(int(standardCenter[0]-inBox[0]/2),int(standardCenter[1]-inBox[1]/2)),
 			(int(standardCenter[0]+inBox[0]/2),int(standardCenter[1]+inBox[1]/2)),(0,0,255),1)
 		cv2.rectangle(img,(int(standardCenter[0]-outBox[0]/2),int(standardCenter[1]-outBox[1]/2)),
