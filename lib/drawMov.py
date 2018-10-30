@@ -19,6 +19,8 @@ class drawMov:
 		self.mambo = None
 		self.droneCheck=False
 		self.droneBattery=None
+		self.inBox=(250,300) #(130,300)->(250,300)
+		self.outBox=(330,380) #(200,380)->(330,380)
 
 	def update(self):
 		self.mambo.smart_sleep(0.01)
@@ -87,7 +89,9 @@ class drawMov:
 		cv2.circle(img,tuple(standardCenter),2,(0,0,255),-1)
 		#cv2.putText(img,"center",tuple(standardCenter),cv2.FONT_HERSHEY_COMPLEX_SMALL,1,(0,0,255),2)
 		roll=self.center[0]-standardCenter[0]
-		vertical=self.center[1]-standardCenter[1]
+		ih=self.inBox[1]
+		oh=self.outBox[1]
+		vertical=self.top
 		print([roll,vertical])
 		if roll < -1 :
 			roll = -50
@@ -95,9 +99,9 @@ class drawMov:
 		elif roll > 1 :
 			roll = 50
 			stackLR += 1
-		if vertical < -1:
+		if vertical > oh:
 			vertical = 50
-		elif vertical > 1 :
+		elif vertical < ih :
 			vertical=-50
 		if yawCount <-1:
 			yaw=-50
@@ -122,19 +126,16 @@ class drawMov:
 		return [int(img.shape[1]/2),int(img.shape[0]/2+150)]
 		#80->150
 
-	def getStandardBox(self,img):
+	def drawStandardBox(self,img):
 		standardCenter=self.getStandardCenter(img)
-		inBox=(250,300) #(130,300)->(250,300)
-		outBox=(330,380) #(200,380)->(330,380)
-		cv2.rectangle(img,(int(standardCenter[0]-inBox[0]/2),int(standardCenter[1]-inBox[1]/2)),
-			(int(standardCenter[0]+inBox[0]/2),int(standardCenter[1]+inBox[1]/2)),(0,0,255),1)
-		cv2.rectangle(img,(int(standardCenter[0]-outBox[0]/2),int(standardCenter[1]-outBox[1]/2)),
-			(int(standardCenter[0]+outBox[0]/2),int(standardCenter[1]+outBox[1]/2)),(0,0,255),1)
-		return inBox,outBox
+		cv2.rectangle(img,(int(standardCenter[0]-self.inBox[0]/2),int(standardCenter[1]-self.inBox[1]/2)),
+			(int(standardCenter[0]+self.inBox[0]/2),int(standardCenter[1]+self.inBox[1]/2)),(0,0,255),1)
+		cv2.rectangle(img,(int(standardCenter[0]-self.outBox[0]/2),int(standardCenter[1]-self.outBox[1]/2)),
+			(int(standardCenter[0]+self.outBox[0]/2),int(standardCenter[1]+self.outBox[1]/2)),(0,0,255),1)
 
 	def adjustBox(self,img):
 		pitch = 0
-		inBox,outBox=self.getStandardBox(img)
+		self.drawStandardBox(img)
 		if self.width*self.height<inBox[0]*inBox[1]:
 			pitch = 100
 		elif self.width*self.height>outBox[0]*outBox[1]:
