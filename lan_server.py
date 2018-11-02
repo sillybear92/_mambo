@@ -268,11 +268,11 @@ def main():
 			net_flag = net_check(client)
 		while True:
 			try:
-				if len(net_flag)==14:
-					print('send to get')
-					unpick = client.sendData(b'get')
-				else:
-					unpick=pickle.loads(net_flag)
+				print('send to get')
+				upd = client.sendData(b'get')
+				if len(upd)==14:
+					continue
+				unpick=pickle.loads(upd)
 				img=unpick_img(unpick)
 				print('success unpick')
 				net_targeton,net_hand,net_track,net_detectResult,net_target=0,None,None,None,None
@@ -322,8 +322,6 @@ def main():
 					exit(0)
 			except Exception as ex:
 				print('Server_Error!! ', ex)
-				net_flag=-1
-				break
 	print('== Turn over ==')
 
 if __name__=='__main__':
