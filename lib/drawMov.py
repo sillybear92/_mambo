@@ -100,9 +100,9 @@ class drawMov:
 		elif roll > 1 :
 			roll = 50
 			stackLR += 1
-		if vertical > oh:
+		if vertical < oh:
 			vertical = 50
-		elif vertical < ih :
+		elif vertical > ih :
 			vertical=-50
 		if yawCount <-1:
 			yaw=-50
@@ -137,9 +137,9 @@ class drawMov:
 	def adjustBox(self,img):
 		pitch = 0
 		self.drawStandardBox(img)
-		if self.width*self.height<inBox[0]*inBox[1]:
+		if self.width*self.height<self.inBox[0]*self.inBox[1]:
 			pitch = 100
-		elif self.width*self.height>outBox[0]*outBox[1]:
+		elif self.width*self.height>self.outBox[0]*self.outBox[1]:
 			pitch = -100
 		return pitch
 
@@ -156,7 +156,7 @@ class drawMov:
 		if pos==[0,0,0,0]:
 			stack=0
 		else:
-			self.mambo.fly_direct(roll=roll, pitch=pitch, yaw=yaw, vertical_movement=vertical, duration=duration)
+			#self.mambo.fly_direct(roll=roll, pitch=pitch, yaw=yaw, vertical_movement=vertical, duration=duration)
 			print('Roll:',roll,' Pitch:',pitch,' Yaw:',yaw,' Vertical:',vertical)
 
 		return stack,yawTime

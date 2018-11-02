@@ -124,9 +124,12 @@ def main():
 					draw_hand(img,hand)
 					img=cv2.add(img,mask)
 				elif targetOn and target is not None:
+					print('get-> draw Target')
+					mov.setTarget(target)
+					mov.drawCenter(img)
+					mov.drawLine(img)
 					draw_rectangle(img,detect_result)
 					draw_target(img,target)
-
 
 			else:
 				print('unpickle data')
@@ -138,21 +141,22 @@ def main():
 				target=unpick['target']
 				print('on:',targetOn,'   hand: ',hand)
 				print('target: ',target)
-				if not targetOn:
+				if targetOn==0:
 					mask=np.ones_like(img,np.uint8)
 					cv2.polylines(mask,([np.int32(tr) for tr in track]),False,(255,255,0),3)
 					draw_hand(img,hand)
 					img=cv2.add(img,mask)
 				else:
-					mov.droneStart()
+					#mov.droneStart()
+					mov.setTarget(target)
+					print('Set Target')
 					mov.drawCenter(img)
-					print('drawCenter')
 					mov.drawLine(img)
-					print('drawLine')
+					print('Draw Center,Line')
 					angleStack,yawTime=mov.adjPos(img,target,angleStack,yawTime)
 					draw_rectangle(img,detect_result)
 					draw_target(img,target)
-					print('drawtarget')
+					print('draw Target')
 					tts.mostRisk(detect_result,[target],img,mov.droneBattery)
 			prevTime=dp_fps(img,prevTime)
 			cv2.imshow('client',img)
