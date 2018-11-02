@@ -41,4 +41,4 @@ class netInfo:
 		while(data==-1):
 			self.sock.sendto(message,self.address)
 			data=self.getData()
-		return pickle.loads(data)
+		return data

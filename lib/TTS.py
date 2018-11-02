@@ -35,7 +35,6 @@ class TTS():
 		self.call_battery_10=False
 		self.call_battery_5=False
 		self.p_flag=[0,0,0]
-		self.p_frame=np.array([0,0,0])
 		self.p_time=[0,0,0] 
 
 	def setID(self,id,secret):
@@ -143,7 +142,7 @@ class TTS():
 
 	def count_frame(self):
 		end=time.time() 
-		if(self.p_frame[0]>5):
+		if((end-self.p_time[0])>5):
 			del self.p_time[0]
 			del self.p_flag[0]
 			self.p_flag.append(0)
