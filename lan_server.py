@@ -276,7 +276,7 @@ def main():
 				img=unpick_img(unpick)
 				print('success unpick')
 				net_targeton,net_hand,net_track,net_detectResult,net_target=0,None,None,None,None
-				if not targetOn:
+				if targetOn==0:
 					result=tf_hand.getBuffer(img)
 					gray=cv2.cvtColor(img,cv2.COLOR_RGB2GRAY)
 					mask=np.ones_like(img,np.uint8)
@@ -289,7 +289,7 @@ def main():
 					rec_info,targetOn,prevtarget=shape_detect(img,mask,rec_info,targetOn,tracker,tf_person)
 					net_targeton=targetOn
 					print('set targetOn:',net_targeton)
-					if targetOn:
+					if targetOn==1:
 						# give targetFLAG
 						net_target=prevtarget[0]
 						data=pickling(net_targeton,net_hand,net_track,net_detectResult,net_target)
