@@ -36,6 +36,7 @@ class TTS():
 		self.call_battery_5=False
 		self.p_flag=[0,0,0]
 		self.p_frame=np.array([0,0,0])
+		self.p_time=[0,0,0] 
 
 	def setID(self,id,secret):
 		self.client_id=id
@@ -51,11 +52,11 @@ class TTS():
 
 			try:	
 				del self.p_flag[0]
-				self.p_frame=np.delete(self.p_frame,0)
+				del self.p_time[0]
 			except IndexError: 
 				pass
 			self.p_flag.append(flag)
-			self.p_frame=np.insert(self.p_frame,2,0)
+			self.p_time.append(time.time())
 			print (self.p_flag)
 			if self.p == None:	
 				self.val["text"]=alarm
@@ -141,12 +142,12 @@ class TTS():
 		self.run(alarm,flag)
 
 	def count_frame(self):
-		self.p_frame+=1
-		if(self.p_frame[0]>30):
-			self.p_frame=np.delete(self.p_frame,0)
-			self.p_frame=np.insert(self.p_frame,2,0)
+		end=time.time() 
+		if(self.p_frame[0]>5):
+			del self.p_time[0]
 			del self.p_flag[0]
 			self.p_flag.append(0)
+			self.p_time.append(0)
 
 	#risk factor distinction
 	def mostRisk(self,obstacle,prevtarget,img,battery):
@@ -162,7 +163,7 @@ class TTS():
 		flag=0
 		for o in obstacle:
 			#50% over
-			if o['confidence']>0.4:
+			if o['confidence']>0.5:
 				xt,yt,xb,yb=o['topleft']['x'],o['topleft']['y'], o['bottomright']['x'],o['bottomright']['y']
 				print("width: {0},height: {1}".format(xb-xt,yb-yt))
 				if o['label']=="traffic":
@@ -188,6 +189,5 @@ class TTS():
 							flag=7
 							risk_factor='볼라드'
 		if risk_distance<500 and flag>3: # HELP HELP 
-			#print(risk_distance, risk_factor)
 			alarm='전방에 '+risk_factor+'가 있습니다.'
 			self.run(alarm,flag)

@@ -9,7 +9,6 @@ from threading import Thread, Lock
 import sys
 from lib.netInfo2 import netInfo
 from lib.TTS import TTS
-#from lib.drawMov import drawMov
 from TTS_SECRET import TTS_SECRET
 from lib import stt
 from multiprocessing import Process
@@ -75,7 +74,7 @@ def draw_rectangle(img,result):
 
 def main():
 	client=netInfo()
-	#client.setServer('bbik.iptime.org',1005)
+#	client.setServer('bbik.iptime.org',1005)
 	client.setServer('192.168.0.14',5001)
 	client.setClient(6666)
 	cap=VideoCapture()
@@ -96,31 +95,41 @@ def main():
 	tts.setID(TTS_SECRET.id,TTS_SECRET.secret)
 	targetOn,hand,mask,angleStack,yawTime,prevTime,target=0,None,None,0,0,0,None
 	client.sock.sendto(b'connect server',client.server_address)
+	print('send to connect server1')
+
 	while(True):
 		mov.update()
 		try:
 			data, address = client.sock.recvfrom(65507)
+			if data == None:
+				print('data is None')
+				continue
 			img,encode_img = cap.getImage()
 			if data == b'get':
+				print('data is get')
 				dopick = {'image' : encode_img.tobytes()}
 				buffer = pickle.dumps(dopick,protocol=2)
 				if buffer is None:
+					print('buffer is None')
 					continue
 				if len(buffer) > 65507:
 					print(len(buffer))
 					print("The message is too large to be sent within a single UDP datagram. We do not handle splitting the message in multiple datagrams")
 					client.sock.sendto(b'FAIL',address)
 					continue
+				print('send buffer')
 				client.sock.sendto(buffer, address)
-				if not targetOn:
+				print('success send data:', len(buffer))
+				if not targetOn and hand is not None:
 					draw_hand(img,hand)
 					img=cv2.add(img,mask)
-				else:
+				elif targetOn and target is not None:
 					draw_rectangle(img,detect_result)
 					draw_target(img,target)
 
 
 			else:
+				print('unpickle data')
 				unpick = pickle.loads(data)
 				targetOn=unpick['on']
 				hand=unpick['hand']
@@ -137,10 +146,13 @@ def main():
 				else:
 					mov.droneStart()
 					mov.drawCenter(img)
+					print('drawCenter')
 					mov.drawLine(img)
+					print('drawLine')
 					angleStack,yawTime=mov.adjPos(img,target,angleStack,yawTime)
 					draw_rectangle(img,detect_result)
 					draw_target(img,target)
+					print('drawtarget')
 					tts.mostRisk(detect_result,[target],img,mov.droneBattery)
 			prevTime=dp_fps(img,prevTime)
 			cv2.imshow('client',img)
@@ -152,6 +164,7 @@ def main():
 		except Exception as ex:
 			print('Client_Error!! ', ex)
 			client.sock.sendto(b'connect server',client.server_address)
+			print('send to connect server2')
 
 	print("Bye..")
 
