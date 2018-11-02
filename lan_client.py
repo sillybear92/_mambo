@@ -14,6 +14,7 @@ from TTS_SECRET import TTS_SECRET
 from lib import stt
 from multiprocessing import Process
 import time
+from lib.drawMov import drawMov
 
 
 
@@ -73,9 +74,6 @@ def draw_rectangle(img,result):
 			(bottom_x, top_y-5),  cv2.FONT_HERSHEY_COMPLEX_SMALL,0.8,(0, 255, 0),1)
 
 def main():
-	#host = '0.0.0.0'
-	#port = 5001
-	#port = 6666
 	client=netInfo()
 	#client.setServer('bbik.iptime.org',1005)
 	client.setServer('192.168.0.14',5001)
@@ -86,12 +84,10 @@ def main():
 	print('starting up on capThread.')
 	#starting up on capThread.
 	print('starting up on %s port %s\n' % client.server_address)
-	'''
 	mov=drawMov()
 	while not mov.droneCheck:
 		mov.droneConnect()
 		print('Power On Drone')
-	'''
 	# Speech recognize
 	speech=Process(target=stt.run)
 	speech.start()
@@ -101,6 +97,7 @@ def main():
 	targetOn,hand,mask,angleStack,yawTime,prevTime,target=0,None,None,0,0,0,None
 	client.sock.sendto(b'connect server',client.server_address)
 	while(True):
+		mov.update()
 		try:
 			data, address = client.sock.recvfrom(65507)
 			img,encode_img = cap.getImage()
@@ -138,17 +135,17 @@ def main():
 					draw_hand(img,hand)
 					img=cv2.add(img,mask)
 				else:
-					#mov.drawCenter(img)
-					#mov.drawLine(img)
-					#angleStack,yawTime=mov.adjPos(img,target,angleStack,yawTime)
+					mov.droneStart()
+					mov.drawCenter(img)
+					mov.drawLine(img)
+					angleStack,yawTime=mov.adjPos(img,target,angleStack,yawTime)
 					draw_rectangle(img,detect_result)
 					draw_target(img,target)
-					#tts.mostRisk(detect_result,[target],img,mov.droneBattery)
+					tts.mostRisk(detect_result,[target],img,mov.droneBattery)
 			prevTime=dp_fps(img,prevTime)
 			cv2.imshow('client',img)
-			#mov.update()
 			if ord('q')==cv2.waitKey(10):
-				#mov.droneStop()
+				mov.droneStop()
 				cap.join()
 				client.sock.close()
 				exit(0)
