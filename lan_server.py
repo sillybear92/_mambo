@@ -239,12 +239,14 @@ def unpick_img(unpick):
 
 def net_check(client):
 	data=-1
+	print('net_check')
 	while data==-1:
 		try:
 			data = client.getData()
 		except Exception as ex: 
 	    		print('Can Not Connect Server', ex)
 	    		sleep(5)
+	print('return data')
 	return data
 
 def main():
@@ -266,8 +268,13 @@ def main():
 			net_flag = net_check(client)
 		while True:
 			try:
-				unpick = client.sendData(b'get')
+				if len(net_flag)==14:
+					print('send to get')
+					unpick = client.sendData(b'get')
+				else:
+					unpick=pickle.loads(net_flag)
 				img=unpick_img(unpick)
+				print('success unpick')
 				net_targeton,net_hand,net_track,net_detectResult,net_target=0,None,None,None,None
 				if not targetOn:
 					result=tf_hand.getBuffer(img)
@@ -281,6 +288,7 @@ def main():
 					#detect_shape
 					rec_info,targetOn,prevtarget=shape_detect(img,mask,rec_info,targetOn,tracker,tf_person)
 					net_targeton=targetOn
+					print('set targetOn:',net_targeton)
 					if targetOn:
 						# give targetFLAG
 						net_target=prevtarget[0]
