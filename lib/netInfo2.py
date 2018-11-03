@@ -24,7 +24,7 @@ class netInfo:
 		self.client_port = port
 		self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		self.sock.bind((self.client_host,self.client_port))
-		self.sock.settimeout(0.5)
+		self.sock.settimeout(0.1)
 
 
 	def getData(self):
