@@ -177,6 +177,10 @@ def main():
 			print('Client_Error!! ', ex)
 			client.sock.sendto(b'connect server',client.server_address)
 			print('send to connect server2')
+		if (speech.is_alive()==False) or (mov.droneBattery < 2):
+			mov.droneStop()
+			exit(0)
+			print('DISCONNECT !!!!!!!!!!!!')
 
 	print("Bye..")
 
