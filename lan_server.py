@@ -21,30 +21,33 @@ from time import sleep
 
 
 # Draw_rec and person motion recognition save
-def draw_rectangle(img,result):
+def hand_rectangle(img,result):
 	n_detect=[]
-	labels=['hand','person', 'car', 'bicycle', 'bollard', 'deskchair', 'traffic' ]
 	for obj in result:
 		label = obj['label']
-		if not label in [l for l in labels]:
-			continue
 		confidence = obj['confidence']
 		top_x = obj['topleft']['x']
 		top_y = obj['topleft']['y']
 		bottom_x = obj['bottomright']['x']
 		bottom_y = obj['bottomright']['y']
-		label = obj['label']
 		if label=='hand':
 			cv2.rectangle(img,(top_x, top_y),(bottom_x, bottom_y), (0, 255, 0),2)
 			cv2.putText(img, label+' - ' + str(  "{0:.0f}%".format(confidence * 100) ),
 				(bottom_x, top_y-5),  cv2.FONT_HERSHEY_COMPLEX_SMALL,0.8,(0, 255, 0),1)
 			n_detect.append([top_x,top_y,bottom_x,bottom_y])
-		elif label == 'person':
+	return n_detect
+
+def person_rectangle(img,result):
+	n_detect=[]
+	for obj in result:
+		label = obj['label']
+		confidence = obj['confidence']
+		top_x = obj['topleft']['x']
+		top_y = obj['topleft']['y']
+		bottom_x = obj['bottomright']['x']
+		bottom_y = obj['bottomright']['y']
+		if label == 'person':
 			n_detect.append([top_x,top_y,bottom_x,bottom_y])
-		else:
-			cv2.rectangle(img,(top_x, top_y),(bottom_x, bottom_y), (0, 255, 0),2)
-			cv2.putText(img, label+' - ' + str(  "{0:.0f}%".format(confidence * 100) ),
-				(bottom_x, top_y-5),  cv2.FONT_HERSHEY_COMPLEX_SMALL,0.8,(0, 255, 0),1)
 	return n_detect
 
 # Display FPS
@@ -151,13 +154,13 @@ def get_target(img,result,tracker,obj,targetOn=1):
 	target=[]
 	inbox=[]
 	neartarget=np.array([]).reshape(-1,4)
-	person=draw_rectangle(img,result)
+	person=person_rectangle(img,result)
 	if len(person)==0:
 		target=[obj]
 	else:
 		for [tx,ty,bx,by] in person:
-			array=np.array([tx,ty,bx,by])
-			neartarget=np.append(neartarget,abs(array-np.array([obj[0],obj[1],obj[2],obj[3]])).reshape(-1,4),axis=0)
+			#array=np.array([tx,ty,bx,by])
+			neartarget=np.append(neartarget,abs(np.array([tx,ty,bx,by])-np.array([obj[0],obj[1],obj[2],obj[3]])).reshape(-1,4),axis=0)
 			if tx > obj[0] and ty > obj[1] and bx < obj[2] and by < obj[3] :
 				inbox.append(True)
 			else:
@@ -177,7 +180,7 @@ def get_target(img,result,tracker,obj,targetOn=1):
 
 def setTracker(img,tracker,target,targetOn=1):
 	tx,ty,bx,by=int(target[0][0]),int(target[0][1]),int(target[0][2]),int(target[0][3])
-	if not targetOn:
+	if targetOn==0:
 		bbox=(tx,ty,bx-tx,by-ty)
 		ok=tracker.init(img,bbox)
 		targetOn=1
@@ -221,8 +224,8 @@ def updateTracker(img,result,tracker,prevtarget):
 	print('prevtarget:',prevtarget)
 	if ok:
 		check,target=get_target(img,result,tracker,bbox)
-		cv2.rectangle(img,(bbox[0],bbox[1]),(bbox[2],bbox[3]),(0,255,0),3)
-		cv2.putText(img,"Tracker",(bbox[2], bbox[1]-5), cv2.FONT_HERSHEY_COMPLEX_SMALL,1,(0,255,0),2)
+		#cv2.rectangle(img,(bbox[0],bbox[1]),(bbox[2],bbox[3]),(0,255,0),3)
+		#cv2.putText(img,"Tracker",(bbox[2], bbox[1]-5), cv2.FONT_HERSHEY_COMPLEX_SMALL,1,(0,255,0),2)
 	else:
 		check,target=get_target(img,result,tracker,prevtarget[0])
 	return target
@@ -282,7 +285,7 @@ def main():
 					mask=np.ones_like(img,np.uint8)
 					# Display FPS
 					prevTime=dp_fps(img,prevTime)
-					hand=draw_rectangle(img,result)
+					hand=hand_rectangle(img,result)
 					track=distance_Box(track,center_Box(hand))
 					cv2.polylines(mask,([np.int32(tr) for tr in track]),False,(255,255,0),3)
 					#detect_shape
