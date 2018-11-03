@@ -24,7 +24,7 @@ class VideoCapture(Thread):
 		self.running = True
 		self.lock = Lock()
 		self.sct = mss()
-		self.mon = {'top':150, 'left':150, 'width':800, 'height':600}
+		self.mon = {'top':100, 'left':90, 'width':800, 'height':600}
 		self.encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 20]
 		#self.preconnect()
 
@@ -149,7 +149,7 @@ def main():
 				else:
 					tts.mostRisk(detect_result,[target],img,mov.droneBattery)
 					if tcnt==0 and mov.mambo.sensors.flying_state == 'landed':
-						#mov.droneStart()
+					#	mov.droneStart()
 						print(">>>>>>>>>>>>>>>>>>>>>>>>take off<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
 						tcnt += 1
 					mov.setTarget(target)
@@ -158,9 +158,8 @@ def main():
 					mov.drawLine(img)
 					print('Draw Center,Line')
 					if tcnt > 20:
-						#angleStack,yawTime=mov.adjPos(img,target,angleStack,yawTime)
-						cv2.putText(img,"got it",(200,200),cv2.FONT_HERSHEY_COMPLEX_SMALL,2,(0,0,255),2)
-						print("got it<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+					#	angleStack,yawTime=mov.adjPos(img,target,angleStack,yawTime)
+						print(tcnt)
 					else:
 						tcnt+=1
 					draw_rectangle(img,detect_result)
