@@ -93,7 +93,7 @@ def main():
 	print('Start STT PROCESS--')
 	tts=TTS()
 	tts.setID(TTS_SECRET.id,TTS_SECRET.secret)
-	targetOn,hand,mask,angleStack,yawTime,prevTime,target=0,None,None,0,0,0,None
+	targetOn,hand,mask,angleStack,yawTime,prevTime,target,tcnt=0,None,None,0,0,0,None,0
 	client.sock.sendto(b'connect server',client.server_address)
 	print('send to connect server1')
 
@@ -147,17 +147,26 @@ def main():
 					draw_hand(img,hand)
 					img=cv2.add(img,mask)
 				else:
-					#mov.droneStart()
+					tts.mostRisk(detect_result,[target],img,mov.droneBattery)
+					if tcnt==0 and mov.mambo.sensors.flying_state == 'landed':
+						#mov.droneStart()
+						print(">>>>>>>>>>>>>>>>>>>>>>>>take off<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+						tcnt += 1
 					mov.setTarget(target)
 					print('Set Target')
 					mov.drawCenter(img)
 					mov.drawLine(img)
 					print('Draw Center,Line')
-					angleStack,yawTime=mov.adjPos(img,target,angleStack,yawTime)
+					if tcnt > 20:
+						#angleStack,yawTime=mov.adjPos(img,target,angleStack,yawTime)
+						cv2.putText(img,"got it",(200,200),cv2.FONT_HERSHEY_COMPLEX_SMALL,2,(0,0,255),2)
+						print("got it<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+					else:
+						tcnt+=1
 					draw_rectangle(img,detect_result)
 					draw_target(img,target)
 					print('draw Target')
-					tts.mostRisk(detect_result,[target],img,mov.droneBattery)
+					
 			prevTime=dp_fps(img,prevTime)
 			cv2.imshow('client',img)
 			if ord('q')==cv2.waitKey(10):

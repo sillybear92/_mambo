@@ -48,9 +48,8 @@ class drawMov:
 		self.mambo.set_max_tilt(1)
 
 	def droneStart(self):
-		if self.mambo.sensors.flying_state == 'landed':
-			print('take off')
-			self.mambo.safe_takeoff(5)
+		print('take off')
+		self.mambo.safe_takeoff(5)
 
 
 	def droneStop(self):
@@ -156,7 +155,7 @@ class drawMov:
 		if pos==[0,0,0,0]:
 			stack=0
 		else:
-			#self.mambo.fly_direct(roll=roll, pitch=pitch, yaw=yaw, vertical_movement=vertical, duration=duration)
+			self.mambo.fly_direct(roll=roll, pitch=pitch, yaw=yaw, vertical_movement=vertical, duration=duration)
 			print('Roll:',roll,' Pitch:',pitch,' Yaw:',yaw,' Vertical:',vertical)
 
 		return stack,yawTime
