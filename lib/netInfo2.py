@@ -6,8 +6,8 @@ import pickle
 
 class netInfo:
 	def __init__(self):
-		#self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+		#self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.host = None
 		self.port = None
 		self.server_address = None
@@ -23,8 +23,8 @@ class netInfo:
 	def setClient(self,port):
 		self.client_host = '0.0.0.0'
 		self.client_port = port
-		#self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-		self.sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+		self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+		#self.sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
 		self.sock.bind((self.client_host,self.client_port))
 		self.sock.settimeout(0.1)
 
