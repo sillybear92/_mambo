@@ -19,8 +19,8 @@ class drawMov:
 		self.mambo = None
 		self.droneCheck=False
 		self.droneBattery=None
-		self.inBox=(250,300) #(130,300)->(250,300)
-		self.outBox=(330,380) #(200,380)->(330,380)
+		self.inBox=(260,380) #(130,300)->(250,300)->(260,380)
+		self.outBox=(330,450) #(200,380)->(330,380)->(330,450)
 
 	def update(self):
 		self.mambo.smart_sleep(0.01)
@@ -94,15 +94,15 @@ class drawMov:
 		vertical=self.top
 		print([roll,vertical])
 		if roll < -1 :
-			roll = -50
+			roll = -20
 			stackLR -= 1
 		elif roll > 1 :
-			roll = 50
+			roll = 20
 			stackLR += 1
 		if vertical < oh:
-			vertical = 50
+			vertical = 20
 		elif vertical > ih :
-			vertical=-50
+			vertical=-20
 		if yawCount <-1:
 			yaw=-50
 			yawCount += 1
@@ -123,8 +123,8 @@ class drawMov:
 		return roll,vertical,yaw,stackLR,yawCount
 
 	def getStandardCenter(self,img):
-		return [int(img.shape[1]/2),int(img.shape[0]/2+150)]
-		#80->150
+		return [int(img.shape[1]/2),int(img.shape[0]/2+80)]
+		#80->150->0->80
 
 	def drawStandardBox(self,img):
 		standardCenter=self.getStandardCenter(img)
@@ -137,9 +137,9 @@ class drawMov:
 		pitch = 0
 		self.drawStandardBox(img)
 		if self.width*self.height<self.inBox[0]*self.inBox[1]:
-			pitch = 100
+			pitch = 30
 		elif self.width*self.height>self.outBox[0]*self.outBox[1]:
-			pitch = -100
+			pitch = -30
 		return pitch
 
 
