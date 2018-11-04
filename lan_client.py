@@ -140,7 +140,7 @@ def main():
 				else:
 					tts.mostRisk(detect_result,[target],img,mov.droneBattery)
 					if tcnt==0 and mov.mambo.sensors.flying_state == 'landed':
-					#	mov.droneStart()
+						mov.droneStart()
 						print(">>>>>>>>>>>>>>>>>>>>>>>>take off<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
 						tcnt += 1
 					mov.setTarget(target)
@@ -149,7 +149,7 @@ def main():
 					mov.drawLine(img)
 					print('Draw Center,Line')
 					if tcnt > 20:
-					#	angleStack,yawTime=mov.adjPos(img,target,angleStack,yawTime)
+						angleStack,yawTime=mov.adjPos(img,target,angleStack,yawTime)
 						print(tcnt)
 					else:
 						tcnt+=1

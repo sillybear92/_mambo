@@ -201,7 +201,7 @@ def run():
 
     with mic_manager as stream:
         resume = False
-        while not stopFlag:
+        while stopFlag==False:
             audio_generator = stream.generator(resume=resume)
             requests = (types.StreamingRecognizeRequest(audio_content=content)
                         for content in audio_generator)
