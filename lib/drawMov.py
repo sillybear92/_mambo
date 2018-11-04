@@ -79,30 +79,32 @@ class drawMov:
 	def drawCenter(self,img):
 		cv2.circle(img,tuple(self.center),2,(255,0,0),-1)
 
+	def adjustVertical(self):
+		vertical=0
+		ih=self.inBox[1]
+		oh=self.outBox[1]
+		vertical=self.top
+		if vertical < oh:
+			vertical = 20
+		elif vertical > ih :
+			vertical=-20
+		return vertical
+
 	def adjustCenter(self,img,stack,yawTime):
 		# right + , front +, vertical
-		roll, vertical, yaw = 0,0,0
+		roll, yaw = 0,0,0
 		angle=0
 		yawCount=yawTime
 		stackLR=stack
 		standardCenter=self.getStandardCenter(img)
-		cv2.circle(img,tuple(standardCenter),2,(0,0,255),-1)
 		#cv2.putText(img,"center",tuple(standardCenter),cv2.FONT_HERSHEY_COMPLEX_SMALL,1,(0,0,255),2)
 		roll=self.center[0]-standardCenter[0]
-		ih=self.inBox[1]
-		oh=self.outBox[1]
-		vertical=self.top
-		print([roll,vertical])
 		if roll < -1 :
 			roll = -20
 			stackLR -= 1
 		elif roll > 1 :
 			roll = 20
 			stackLR += 1
-		if vertical < oh:
-			vertical = 20
-		elif vertical > ih :
-			vertical=-20
 		if yawCount <-1:
 			yaw=-50
 			yawCount += 1
@@ -119,8 +121,7 @@ class drawMov:
 			stackLR = 0
 			print('angle: ', angle)
 			yawCount=int(angle/7)
-
-		return roll,vertical,yaw,stackLR,yawCount
+		return roll,yaw,stackLR,yawCount
 
 	def getStandardCenter(self,img):
 		return [int(img.shape[1]/2),int(img.shape[0]/2+80)]
@@ -128,6 +129,7 @@ class drawMov:
 
 	def drawStandardBox(self,img):
 		standardCenter=self.getStandardCenter(img)
+		cv2.circle(img,tuple(standardCenter),2,(0,0,255),-1)
 		cv2.rectangle(img,(int(standardCenter[0]-self.inBox[0]/2),int(standardCenter[1]-self.inBox[1]/2)),
 			(int(standardCenter[0]+self.inBox[0]/2),int(standardCenter[1]+self.inBox[1]/2)),(0,0,255),1)
 		cv2.rectangle(img,(int(standardCenter[0]-self.outBox[0]/2),int(standardCenter[1]-self.outBox[1]/2)),
@@ -135,7 +137,6 @@ class drawMov:
 
 	def adjustBox(self,img):
 		pitch = 0
-		self.drawStandardBox(img)
 		if self.width*self.height<self.inBox[0]*self.inBox[1]:
 			pitch = 30
 		elif self.width*self.height>self.outBox[0]*self.outBox[1]:
@@ -146,11 +147,14 @@ class drawMov:
 	def adjPos(self,img,target,angleStack,yawTime):
 		roll,pitch,yaw,vertical,duration=0,0,0,0,0.1
 		angle=0
+		self.drawStandardBox(img)
 		stack=angleStack
 		cv2.putText(img, "Following The Target", (5,60), cv2.FONT_HERSHEY_SIMPLEX, 0.75,(0,0,255),2)
 		self.setTarget(target)
-		pitch = self.adjustBox(img)
-		roll,vertical,yaw,stack,yawTime=self.adjustCenter(img,stack,yawTime)
+		vertical=self.adjustVertical()
+		if vertical == 0:
+			pitch = self.adjustBox(img)
+			roll,yaw,stack,yawTime=self.adjustCenter(img,stack,yawTime)
 		pos=[roll,pitch,yaw,vertical]
 		if pos==[0,0,0,0]:
 			stack=0
