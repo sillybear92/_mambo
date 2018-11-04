@@ -19,7 +19,7 @@ class drawMov:
 		self.mambo = None
 		self.droneCheck=False
 		self.droneBattery=None
-		self.inBox=(260,380) #(130,300)->(250,300)->(260,380) width height
+		self.inBox=(230,340) #(130,300)->(250,300)->(260,380) width height
 		self.outBox=(330,450) #(200,380)->(330,380)->(330,450) width height
 		self.inBoxPos=[]
 		self.outBoxPos=[]
