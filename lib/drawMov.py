@@ -19,8 +19,10 @@ class drawMov:
 		self.mambo = None
 		self.droneCheck=False
 		self.droneBattery=None
-		self.inBox=(260,380) #(130,300)->(250,300)->(260,380)
-		self.outBox=(330,450) #(200,380)->(330,380)->(330,450)
+		self.inBox=(260,380) #(130,300)->(250,300)->(260,380) width height
+		self.outBox=(330,450) #(200,380)->(330,380)->(330,450) width height
+		self.inBoxPos=[]
+		self.outBoxPos=[]
 
 	def update(self):
 		self.mambo.smart_sleep(0.01)
@@ -51,6 +53,12 @@ class drawMov:
 		print('take off')
 		self.mambo.safe_takeoff(5)
 
+	def getInOutBoxPos(self,img):
+		standardCenter=self.getStandardCenter(img)
+		self.inBoxPos=[int(standardCenter[0]-self.inBox[0]/2),int(standardCenter[1]-self.inBox[1]/2),
+			int(standardCenter[0]+self.inBox[0]/2),int(standardCenter[1]+self.inBox[1]/2)]
+		self.outBoxPos=[int(standardCenter[0]-self.outBox[0]/2),int(standardCenter[1]-self.outBox[1]/2),
+			int(standardCenter[0]+self.outBox[0]/2),int(standardCenter[1]+self.outBox[1]/2)]
 
 	def droneStop(self):
 		if not self.mambo.sensors.flying_state == 'landed':
@@ -81,8 +89,8 @@ class drawMov:
 
 	def adjustVertical(self):
 		vertical=0
-		ih=self.inBox[1]
-		oh=self.outBox[1]
+		ih=self.inBoxPos[1]
+		oh=self.outBoxPos[1]
 		vertical=self.top
 		if vertical < oh:
 			vertical = 10
@@ -128,12 +136,12 @@ class drawMov:
 		#80->150->0->80
 
 	def drawStandardBox(self,img):
-		standardCenter=self.getStandardCenter(img)
+		self.getInOutBoxPos(img)
 		cv2.circle(img,tuple(standardCenter),2,(0,0,255),-1)
-		cv2.rectangle(img,(int(standardCenter[0]-self.inBox[0]/2),int(standardCenter[1]-self.inBox[1]/2)),
-			(int(standardCenter[0]+self.inBox[0]/2),int(standardCenter[1]+self.inBox[1]/2)),(0,0,255),1)
-		cv2.rectangle(img,(int(standardCenter[0]-self.outBox[0]/2),int(standardCenter[1]-self.outBox[1]/2)),
-			(int(standardCenter[0]+self.outBox[0]/2),int(standardCenter[1]+self.outBox[1]/2)),(0,0,255),1)
+		cv2.rectangle(img,(self.inBoxPos[0],self.inBoxPos[1]),
+			(self.inBoxPos[2],self.inBoxPos[3]),(0,0,255),1)
+		cv2.rectangle(img,(self.outBoxPos[0],self.outBoxPos[1]),
+			(self.outBoxPos[2],self.outBoxPos[3]),(0,0,255),1)
 
 	def adjustBox(self,img):
 		pitch = 0
