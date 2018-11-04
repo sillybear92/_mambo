@@ -57,17 +57,13 @@ def draw_target(img,tr):
 	cv2.putText(img, "Target",(tr[2], tr[1]-5),cv2.FONT_HERSHEY_COMPLEX_SMALL,1,(0,255,255),2)
 
 def draw_rectangle(img,result):
-	labels=['hand','person', 'car', 'bicycle', 'bollard', 'deskchair', 'traffic' ]
 	for obj in result:
 		label = obj['label']
-		if not label in [l for l in labels]:
-			continue
 		confidence = obj['confidence']
 		top_x = obj['topleft']['x']
 		top_y = obj['topleft']['y']
 		bottom_x = obj['bottomright']['x']
 		bottom_y = obj['bottomright']['y']
-		label = obj['label']
 		cv2.rectangle(img,(top_x, top_y),(bottom_x, bottom_y), (0, 255, 0),2)
 		cv2.putText(img, label+' - ' + str(  "{0:.0f}%".format(confidence * 100) ),
 			(bottom_x, top_y-5),  cv2.FONT_HERSHEY_COMPLEX_SMALL,0.8,(0, 255, 0),1)
@@ -125,11 +121,6 @@ def main():
 					img=cv2.add(img,mask)
 				elif targetOn and target is not None:
 					print('get-> draw Target')
-					mov.setTarget(target)
-					mov.drawCenter(img)
-					mov.drawLine(img)
-					draw_rectangle(img,detect_result)
-					draw_target(img,target)
 
 			else:
 				print('unpickle data')
