@@ -85,9 +85,9 @@ class drawMov:
 		oh=self.outBox[1]
 		vertical=self.top
 		if vertical < oh:
-			vertical = 20
+			vertical = 10
 		elif vertical > ih :
-			vertical=-20
+			vertical=-10
 		return vertical
 
 	def adjustCenter(self,img,stack,yawTime):
