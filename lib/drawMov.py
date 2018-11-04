@@ -133,7 +133,7 @@ class drawMov:
 		return roll,yaw,stackLR,yawCount
 
 	def getStandardCenter(self,img):
-		return [int(img.shape[1]/2),int(img.shape[0]/2+120)]
+		return [int(img.shape[1]/2),int(img.shape[0]/2+150)]
 		#80->150->0->80
 
 	def drawStandardBox(self,img):
