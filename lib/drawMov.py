@@ -59,6 +59,7 @@ class drawMov:
 			int(standardCenter[0]+self.inBox[0]/2),int(standardCenter[1]+self.inBox[1]/2)]
 		self.outBoxPos=[int(standardCenter[0]-self.outBox[0]/2),int(standardCenter[1]-self.outBox[1]/2),
 			int(standardCenter[0]+self.outBox[0]/2),int(standardCenter[1]+self.outBox[1]/2)]
+		return standardCenter
 
 	def droneStop(self):
 		if not self.mambo.sensors.flying_state == 'landed':
@@ -136,7 +137,7 @@ class drawMov:
 		#80->150->0->80
 
 	def drawStandardBox(self,img):
-		self.getInOutBoxPos(img)
+		standardCenter=self.getInOutBoxPos(img)
 		cv2.circle(img,tuple(standardCenter),2,(0,0,255),-1)
 		cv2.rectangle(img,(self.inBoxPos[0],self.inBoxPos[1]),
 			(self.inBoxPos[2],self.inBoxPos[3]),(0,0,255),1)
