@@ -19,8 +19,8 @@ class drawMov:
 		self.mambo = None
 		self.droneCheck=False
 		self.droneBattery=None
-		self.inBox=(220,320) #(130,300)->(250,300)->(260,380) width height
-		self.outBox=(340,450) #(200,380)->(330,380)->(330,450) width height
+		self.inBox=(220,300) #(130,300)->(250,300)->(260,380) width height
+		self.outBox=(340,370) #(200,380)->(330,380)->(330,450) width height
 		self.inBoxPos=[]
 		self.outBoxPos=[]
 
@@ -92,11 +92,11 @@ class drawMov:
 		vertical=0
 		ih=self.inBoxPos[1]
 		oh=self.outBoxPos[1]
-		vertical=self.top
-		if vertical < oh:
+		vt=self.top
+		if vt < oh:
 			vertical = 10
-		elif vertical > ih :
-			vertical=-10
+		elif vt > ih :
+			vertical = -10
 		return vertical
 
 	def adjustCenter(self,img,stack,yawTime):
@@ -133,7 +133,7 @@ class drawMov:
 		return roll,yaw,stackLR,yawCount
 
 	def getStandardCenter(self,img):
-		return [int(img.shape[1]/2),int(img.shape[0]/2+150)]
+		return [int(img.shape[1]/2),int(img.shape[0]/2+120)]
 		#80->150->0->80
 
 	def drawStandardBox(self,img):
