@@ -34,8 +34,9 @@ class resultTF(Thread):
 		optionPerson={"pbLoad":hp+"\\darkflow-master\\built_graph\\yolo180905.pb",
 		 "metaLoad":hp+ "\\darkflow-master\\built_graph\\yolo180905.meta",
 		 "threshold":0.4, "gpu":0.7}
-		optionDetect={"pbLoad":hp+"\\darkflow-master\\built_graph\\detect180909.pb",
-		 "metaLoad":hp+ "\\darkflow-master\\built_graph\\detect180909.meta",
+		 # detect180909->detect181105
+		optionDetect={"pbLoad":hp+"\\darkflow-master\\built_graph\\detect181105.pb",
+		 "metaLoad":hp+ "\\darkflow-master\\built_graph\\detect181105.meta",
 		 "threshold":0.4, "gpu":0.7}
 		tfOptions = {"hand" : optionHand, "person" : optionPerson, "detect": optionDetect}
 		return tfOptions[option]
