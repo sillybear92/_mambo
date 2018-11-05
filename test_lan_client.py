@@ -13,7 +13,7 @@ from TTS_SECRET import TTS_SECRET
 from lib import stt
 from multiprocessing import Process
 import time
-from lib.drawMov import drawMov
+from lib.test_drawMov import drawMov
 
 
 
@@ -140,8 +140,9 @@ def main():
 				else:
 					tts.mostRisk(detect_result,[target],img,mov.droneBattery)
 					if tcnt==0 and mov.mambo.sensors.flying_state == 'landed':
-						mov.droneStart()
+						#mov.droneStart()
 						print(">>>>>>>>>>>>>>>>>>>>>>>>take off<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+						print(b'드론 이륙!!!!!!!!!!!!!!')
 						tcnt += 1
 					mov.setTarget(target)
 					print('Set Target')
