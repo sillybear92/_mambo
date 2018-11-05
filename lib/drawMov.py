@@ -101,7 +101,7 @@ class drawMov:
 
 	def adjustCenter(self,img,stack,yawTime):
 		# right + , front +, vertical
-		roll, yaw = 0,0,0
+		roll, yaw = 0,0
 		angle=0
 		yawCount=yawTime
 		stackLR=stack
