@@ -6,8 +6,8 @@ import pickle
 
 class netInfo:
 	def __init__(self):
-		#self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+		#self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.host = None
 		self.port = None
 		self.server_address = None
