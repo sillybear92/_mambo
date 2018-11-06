@@ -127,22 +127,24 @@ def shape_detect(img,mask,rec_info,targetOn,tracker,tf_person):
 		peri = cv2.arcLength(c,True)
 		approx=cv2.approxPolyDP(c,0.04*peri,True)
 		if len(approx) == 4:
-			shape = "rectangle"
-			rec_point=abs(np.array([rec[-1] for rec in rec_info]).reshape(-1,1,2)\
-				-np.array([cX,cY]).reshape(1,-1,2)).max(-1)<RECTANGLE_POINT_DISTANCE
-			p_1,p_2=np.where(rec_point==True)
-			if len(p_1)==0:
-				rec_info.append([[cX,cY]])
-			else:
-				for x,y in zip(p_1,p_2):
-					rec_info[x].append([cX,cY])
-					if len(rec_info[x])>SAME_RECTANGLE_POINT:
-						if not targetOn:
-							target_hand.append([c[-1][0][0],c[-1][0][1],c[-1][0][0],c[-1][0][1]])
-							result=tf_person.getBuffer(img)
-							targetOn,target=get_target(img,result,tracker,target_hand[0],targetOn)
+			(x, y, w, h) = cv2.boundingRect(approx)
+			if w*h>10:
+				shape = "rectangle"
+				rec_point=abs(np.array([rec[-1] for rec in rec_info]).reshape(-1,1,2)\
+					-np.array([cX,cY]).reshape(1,-1,2)).max(-1)<RECTANGLE_POINT_DISTANCE
+				p_1,p_2=np.where(rec_point==True)
+				if len(p_1)==0:
+					rec_info.append([[cX,cY]])
+				else:
+					for x,y in zip(p_1,p_2):
+						rec_info[x].append([cX,cY])
+						if len(rec_info[x])>SAME_RECTANGLE_POINT:
+							if not targetOn:
+								target_hand.append([c[-1][0][0],c[-1][0][1],c[-1][0][0],c[-1][0][1]])
+								result=tf_person.getBuffer(img)
+								targetOn,target=get_target(img,result,tracker,target_hand[0],targetOn)
 
-						del rec_info[x][0]
+							del rec_info[x][0]
 		else:
 			shape = "not_detect"
 		cv2.drawContours(mask,[c],-1,(0,255,0),2)
