@@ -142,7 +142,7 @@ def main():
 					if tcnt==0 and mov.mambo.sensors.flying_state == 'landed':
 						#mov.droneStart()
 						print(">>>>>>>>>>>>>>>>>>>>>>>>take off<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
-						print(b'드론 이륙!!!!!!!!!!!!!!')
+						print(u'드론 이륙!!!!!!!!!!!!!!')
 						tcnt += 1
 					mov.setTarget(target)
 					print('Set Target')
