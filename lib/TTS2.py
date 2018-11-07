@@ -15,8 +15,8 @@ import time
 
 class TTS():
 	def __init__(self):
-		self.client_id = "z6r28zt96q"
-		self.client_secret = "5JpTYO1zpUKCzGipoESGb1ixja3JWy5DR7Zqghlp"
+		self.client_id = None
+		self.client_secret = None
 		self.speaker = "mijin" 
 		self.speed = "0" 
 		self.val = {
