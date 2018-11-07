@@ -128,7 +128,7 @@ def shape_detect(img,mask,rec_info,targetOn,tracker,tf_person):
 		approx=cv2.approxPolyDP(c,0.04*peri,True)
 		if len(approx) == 4:
 			(x, y, w, h) = cv2.boundingRect(approx)
-			if w*h>10:
+			if w*h>100:
 				shape = "rectangle"
 				rec_point=abs(np.array([rec[-1] for rec in rec_info]).reshape(-1,1,2)\
 					-np.array([cX,cY]).reshape(1,-1,2)).max(-1)<RECTANGLE_POINT_DISTANCE
