@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 #coding=utf8
-## TTS만 Thread
 import os
 import sys
 import urllib
