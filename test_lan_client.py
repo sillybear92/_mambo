@@ -138,9 +138,9 @@ def main():
 					draw_hand(img,hand)
 					img=cv2.add(img,mask)
 				else:
-					tts.mostRisk(detect_result,[target],img,mov.droneBattery)
+					tts.mostRisk(detect_result,[target],img,95)
 					if tcnt==0 and mov.mambo.sensors.flying_state == 'landed':
-						#mov.droneStart()
+						mov.droneStart()
 						print(">>>>>>>>>>>>>>>>>>>>>>>>take off<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
 						print(u'드론 이륙!!!!!!!!!!!!!!')
 						tcnt += 1

@@ -26,7 +26,7 @@ class netInfo:
 		#self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 1)
 		self.sock.bind((self.client_host,self.client_port))
-		자기 . 양말 . settimeout ( 0.5)
+		self.sock.settimeout (0.5)
 
 
 	def getData(self):
