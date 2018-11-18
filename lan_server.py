@@ -359,7 +359,9 @@ def main():
 					img=cv2.add(img,mask)
 
 				else:
+					# YOLO 기반 사람 탐지 결과
 					result=tf_person.getBuffer(img)
+					# YOLO 기반 장애물 탐지 결과 (자동차, 자전거, 볼라드, 책상의자, 신호등)
 					detect_result=tf_detect.getBuffer(img)
 					# Display FPS
 					prevTime=dp_fps(img,prevTime)
