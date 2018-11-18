@@ -8,12 +8,12 @@ from mss import mss
 from threading import Thread, Lock
 import sys
 from lib.netInfo2 import netInfo
-from lib.TTS import TTS
-from TTS_SECRET import TTS_SECRET
-from lib import stt
+#from lib.TTS import TTS
+#from TTS_SECRET import TTS_SECRET
+#from lib import stt
 from multiprocessing import Process
 import time
-from lib.test_drawMov import drawMov
+#from lib.test_drawMov import drawMov
 
 
 
@@ -79,22 +79,24 @@ def main():
 	print('starting up on capThread.')
 	#starting up on capThread.
 	print('starting up on %s port %s\n' % client.server_address)
+	'''
 	mov=drawMov()
 	while not mov.droneCheck:
 		mov.droneConnect()
 		print('Power On Drone')
+	'''
 	# Speech recognize
-	speech=Process(target=stt.run)
-	speech.start()
-	print('Start STT PROCESS--')
-	tts=TTS()
-	tts.setID(TTS_SECRET.id,TTS_SECRET.secret)
+	#speech=Process(target=stt.run)
+	#speech.start()
+	#print('Start STT PROCESS--')
+	#tts=TTS()
+	#tts.setID(TTS_SECRET.id,TTS_SECRET.secret)
 	targetOn,hand,mask,angleStack,yawTime,prevTime,target,tcnt=0,None,None,0,0,0,None,0
 	client.sock.sendto(b'connect server',client.server_address)
 	print('send to connect server1')
 
 	while(True):
-		mov.update()
+		#mov.update()
 		try:
 			data, address = client.sock.recvfrom(65507)
 			if data == None:
@@ -138,7 +140,8 @@ def main():
 					draw_hand(img,hand)
 					img=cv2.add(img,mask)
 				else:
-					tts.mostRisk(detect_result,[target],img,95)
+					#tts.mostRisk(detect_result,[target],img,95)
+					'''
 					if tcnt==0 and mov.mambo.sensors.flying_state == 'landed':
 						mov.droneStart()
 						print(">>>>>>>>>>>>>>>>>>>>>>>>take off<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
@@ -154,6 +157,7 @@ def main():
 						print(tcnt)
 					else:
 						tcnt+=1
+					'''
 					draw_rectangle(img,detect_result)
 					draw_target(img,target)
 					print('draw Target')
@@ -161,7 +165,7 @@ def main():
 			prevTime=dp_fps(img,prevTime)
 			cv2.imshow('client',img)
 			if ord('q')==cv2.waitKey(10):
-				mov.droneStop()
+				#mov.droneStop()
 				cap.join()
 				client.sock.close()
 				exit(0)
@@ -169,10 +173,10 @@ def main():
 			print('Client_Error!! ', ex)
 			client.sock.sendto(b'connect server',client.server_address)
 			print('send to connect server2')
-		if (speech.is_alive()==False) or (mov.droneBattery < 2):
-			mov.droneStop()
-			exit(0)
-			print('DISCONNECT !!!!!!!!!!!!')
+		#if (speech.is_alive()==False) or (mov.droneBattery < 2):
+			#mov.droneStop()
+			#exit(0)
+			#print('DISCONNECT !!!!!!!!!!!!')
 
 	print("Bye..")
 

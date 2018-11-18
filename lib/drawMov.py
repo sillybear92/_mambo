@@ -24,12 +24,14 @@ class drawMov:
 		self.inBoxPos=[]
 		self.outBoxPos=[]
 
+	# 드론의 상태를 업데이트 한다
 	def update(self):
 		self.mambo.smart_sleep(0.01)
+		# 드론의 배터리 상태를 갱신한다
 		self.droneBattery=int(self.mambo.sensors.battery)
 		print("Battery:",self.droneBattery,"%   State:",self.mambo.sensors.flying_state)
 
-
+	# 타겟의 좌표를 갱신한다
 	def setTarget(self,target):
 		self.tx,self.ty,self.bx,self.by = int(target[0]),int(target[1]),int(target[2]),int(target[3])
 		self.top=self.ty
@@ -39,20 +41,26 @@ class drawMov:
 		self.width = self.right - self.left
 		self.height = self.bottom - self.top
 		self.center = self.getCenter(target)
-		
+	
+	# 드론 연결	
 	def droneConnect(self):
+		# 일반 패키지의 경우에만 사용하며, 블루투스를 통해 드론을 찾는다
 		self.mamboAddr,self.mamboName = findMinidrone.getMamboAddr()
+		# FPV의 경우 use_wifi=True, 일반 패키지의 경우 use_wifi=False 
 		self.mambo = Mambo(self.mamboAddr, use_wifi=False)
 		self.droneCheck=self.mambo.connect(num_retries=3)
 		print("Drone Connect: ",self.droneCheck)
 		self.mambo.smart_sleep(2)
+		# 드론의 상태를 받아온다 최초 1회만 하면 됨
 		self.mambo.ask_for_state_update()
 		self.mambo.set_max_tilt(1)
 
+	# 드론 이륙
 	def droneStart(self):
 		print('take off')
 		self.mambo.safe_takeoff(5)
 
+	# 이미지의 크기를 기준으로 드론 움직임의 기준이 되는 InBOX, OutBOX 표현
 	def getInOutBoxPos(self,img):
 		standardCenter=self.getStandardCenter(img)
 		self.inBoxPos=[int(standardCenter[0]-self.inBox[0]/2),int(standardCenter[1]-self.inBox[1]/2),
@@ -61,6 +69,7 @@ class drawMov:
 			int(standardCenter[0]+self.outBox[0]/2),int(standardCenter[1]+self.outBox[1]/2)]
 		return standardCenter
 
+	# 드론 착륙 및 연결 해제
 	def droneStop(self):
 		if not self.mambo.sensors.flying_state == 'landed':
 			self.mambo.safe_land(5)
@@ -78,6 +87,7 @@ class drawMov:
 		moveCenter=self.getStandardCenter(img)
 		cv2.line(img,(self.center[0],self.center[1]),(moveCenter[0],moveCenter[1]),(255,0,0),2)
 
+	# 타겟의 위치와 이미지의 중앙점을 선으로 잇고 -Y축 기준으로 드론의 회전 각을 계산한다
 	def getAngle(self,img):
 		moveCenter=self.getStandardCenter(img)
 		distance=math.sqrt((moveCenter[0]-self.center[0])**2+(moveCenter[1]-self.center[1])**2)
@@ -88,6 +98,7 @@ class drawMov:
 	def drawCenter(self,img):
 		cv2.circle(img,tuple(self.center),2,(255,0,0),-1)
 
+	# 드론의 수직이동 값 계산
 	def adjustVertical(self):
 		vertical=0
 		ih=self.inBoxPos[1]
@@ -99,6 +110,7 @@ class drawMov:
 			vertical = -10
 		return vertical
 
+	# 드론의 수평이동, Yaw, Yaw 횟수 계산
 	def adjustCenter(self,img,stack,yawTime):
 		# right + , front +, vertical
 		roll, yaw = 0,0
@@ -152,7 +164,7 @@ class drawMov:
 			pitch = -30
 		return pitch
 
-
+	# 타겟의 위치에 따른 드론의 직접적인 움직임 제어
 	def adjPos(self,img,target,angleStack,yawTime):
 		roll,pitch,yaw,vertical,duration=0,0,0,0,0.1
 		angle=0
