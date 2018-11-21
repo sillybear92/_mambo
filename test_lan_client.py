@@ -122,6 +122,7 @@ def main():
 					draw_hand(img,hand)
 					img=cv2.add(img,mask)
 				elif targetOn and target is not None:
+					draw_target(img,target)
 					print('get-> draw Target')
 
 			else:
